@@ -1,0 +1,101 @@
+// Prisma schema for Dropshipro.
+//
+// NOTE: This models the data layer we wire up in Phase 2 (operator admin)
+// and Phase 4 (supplier automation). The MVP storefront currently reads its
+// catalog from src/data/products.ts; swapping that for the database is a
+// later phase. Provider is PostgreSQL per the roadmap.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  description String
+  // Price stored in minor units (cents) to avoid float issues.
+  priceCents  Int
+  currency    String      @default("usd")
+  category    String
+  imageEmoji  String?
+  imageColor  String?
+  active      Boolean     @default(true)
+  // Supplier fields (used in Phase 4).
+  supplierUrl   String?
+  supplierCost  Int?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  customerId      String?
+  email           String
+  status          OrderStatus @default(PENDING)
+  totalCents      Int
+  currency        String      @default("usd")
+  stripeSessionId String?     @unique
+  // Shipping address (filled at checkout).
+  shippingName    String?
+  shippingLine1   String?
+  shippingLine2   String?
+  shippingCity    String?
+  shippingState   String?
+  shippingZip     String?
+  shippingCountry String?
+  // Supplier fulfillment (Phase 4).
+  supplierOrderId String?
+  trackingNumber  String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  order      Order   @relation(fields: [orderId], references: [id])
+  orderId    String
+  product    Product @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  priceCents Int
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  ORDERED_WITH_SUPPLIER
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
