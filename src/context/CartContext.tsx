@@ -10,21 +10,26 @@ import {
 } from "react";
 
 export type CartItem = {
-  id: string;
+  lineId: string; // unique per product+color+size combination
+  productId: string;
   slug: string;
   title: string;
   priceCents: number;
   currency: string;
   image: string | null;
   category: string;
+  color?: string;
+  size?: string;
   quantity: number;
 };
 
+export type AddItemInput = Omit<CartItem, "lineId" | "quantity">;
+
 type CartContextType = {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  addItem: (item: AddItemInput, quantity?: number) => void;
+  removeItem: (lineId: string) => void;
+  updateQuantity: (lineId: string, quantity: number) => void;
   clear: () => void;
   totalItems: number;
   totalCents: number;
@@ -32,13 +37,16 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | null>(null);
 
-const STORAGE_KEY = "dropshipro_cart_v1";
+const STORAGE_KEY = "dropshipro_cart_v2";
+
+function makeLineId(productId: string, color?: string, size?: string): string {
+  return `${productId}|${color ?? ""}|${size ?? ""}`;
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load from localStorage on mount.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -49,7 +57,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
-  // Persist on change (after initial hydration).
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -59,27 +66,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, hydrated]);
 
-  function addItem(item: Omit<CartItem, "quantity">, quantity = 1) {
+  function addItem(item: AddItemInput, quantity = 1) {
+    const lineId = makeLineId(item.productId, item.color, item.size);
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => i.lineId === lineId);
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i,
+          i.lineId === lineId ? { ...i, quantity: i.quantity + quantity } : i,
         );
       }
-      return [...prev, { ...item, quantity }];
+      return [...prev, { ...item, lineId, quantity }];
     });
   }
 
-  function removeItem(id: string) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  function removeItem(lineId: string) {
+    setItems((prev) => prev.filter((i) => i.lineId !== lineId));
   }
 
-  function updateQuantity(id: string, quantity: number) {
+  function updateQuantity(lineId: string, quantity: number) {
     setItems((prev) =>
       quantity <= 0
-        ? prev.filter((i) => i.id !== id)
-        : prev.map((i) => (i.id === id ? { ...i, quantity } : i)),
+        ? prev.filter((i) => i.lineId !== lineId)
+        : prev.map((i) => (i.lineId === lineId ? { ...i, quantity } : i)),
     );
   }
 

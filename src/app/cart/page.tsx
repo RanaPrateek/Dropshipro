@@ -34,7 +34,7 @@ export default function CartPage() {
         <ul className="space-y-4">
           {items.map((item) => (
             <li
-              key={item.id}
+              key={item.lineId}
               className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4"
             >
               <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
@@ -52,13 +52,18 @@ export default function CartPage() {
                 >
                   {item.title}
                 </Link>
+                {(item.color || item.size) && (
+                  <div className="mt-0.5 text-xs text-slate-500">
+                    {[item.color, item.size].filter(Boolean).join(" · ")}
+                  </div>
+                )}
                 <div className="mt-1 text-sm text-slate-500">
                   {formatPrice(item.priceCents, item.currency)} each
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                   className="h-8 w-8 rounded-lg border border-slate-300 text-lg leading-none hover:bg-slate-50"
                   aria-label="Decrease quantity"
                 >
@@ -66,7 +71,7 @@ export default function CartPage() {
                 </button>
                 <span className="w-8 text-center font-medium">{item.quantity}</span>
                 <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                   className="h-8 w-8 rounded-lg border border-slate-300 text-lg leading-none hover:bg-slate-50"
                   aria-label="Increase quantity"
                 >
@@ -77,7 +82,7 @@ export default function CartPage() {
                 {formatPrice(item.priceCents * item.quantity, item.currency)}
               </div>
               <button
-                onClick={() => removeItem(item.id)}
+                onClick={() => removeItem(item.lineId)}
                 className="ml-2 text-slate-400 hover:text-red-500"
                 aria-label="Remove item"
               >

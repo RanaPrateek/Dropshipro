@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { toStoreProduct } from "@/lib/products";
 import ProductForm from "@/components/admin/ProductForm";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +12,10 @@ export default async function EditProductPage({
 }: {
   params: { id: string };
 }) {
-  const product = await prisma.product.findUnique({ where: { id: params.id } });
-  if (!product) notFound();
+  const row = await prisma.product.findUnique({ where: { id: params.id } });
+  if (!row) notFound();
+
+  const p = toStoreProduct(row);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -23,14 +26,21 @@ export default async function EditProductPage({
       <div className="mt-8">
         <ProductForm
           initial={{
-            id: product.id,
-            title: product.title,
-            description: product.description,
-            category: product.category,
-            priceDollars: (product.priceCents / 100).toFixed(2),
-            image: product.image,
-            supplierUrl: product.supplierUrl ?? "",
-            active: product.active,
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            category: p.category,
+            priceDollars: (p.priceCents / 100).toFixed(2),
+            images: p.images,
+            colorsText: p.colors.join(", "),
+            sizesText: p.sizes.join(", "),
+            ratingAvg: p.ratingAvg != null ? String(p.ratingAvg) : "",
+            reviewsCount: p.reviewsCount ? String(p.reviewsCount) : "",
+            soldCount: p.soldCount ? String(p.soldCount) : "",
+            shipDaysMin: String(p.shipDaysMin),
+            shipDaysMax: String(p.shipDaysMax),
+            supplierUrl: row.supplierUrl ?? "",
+            active: row.active,
           }}
         />
       </div>

@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uniqueSlug } from "@/lib/products";
 
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((v) => String(v).trim()).filter(Boolean);
+}
+
 export async function GET() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
@@ -27,6 +32,8 @@ export async function POST(req: Request) {
     );
   }
 
+  const images = toStringArray(body.images);
+
   const product = await prisma.product.create({
     data: {
       title,
@@ -34,7 +41,18 @@ export async function POST(req: Request) {
       category,
       priceCents,
       currency: body.currency || "usd",
-      image: body.image || null,
+      image: images[0] ?? null,
+      images: JSON.stringify(images),
+      colors: JSON.stringify(toStringArray(body.colors)),
+      sizes: JSON.stringify(toStringArray(body.sizes)),
+      ratingAvg:
+        body.ratingAvg != null && body.ratingAvg !== ""
+          ? Number(body.ratingAvg)
+          : null,
+      reviewsCount: Math.max(0, Math.round(Number(body.reviewsCount) || 0)),
+      soldCount: Math.max(0, Math.round(Number(body.soldCount) || 0)),
+      shipDaysMin: Math.max(0, Math.round(Number(body.shipDaysMin) || 7)),
+      shipDaysMax: Math.max(0, Math.round(Number(body.shipDaysMax) || 14)),
       supplierUrl: body.supplierUrl || null,
       active: body.active ?? true,
       slug: await uniqueSlug(title),

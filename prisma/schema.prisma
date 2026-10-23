@@ -17,13 +17,27 @@ model Product {
   id           String      @id @default(cuid())
   slug         String      @unique
   title        String
+  // Markdown: supports bold (**text**) and bullet lists (- item).
   description  String
   // Price stored in minor units (cents) to avoid floating-point issues.
   priceCents   Int
   currency     String      @default("usd")
   category     String
-  // Path to an uploaded image (/uploads/...) or an external URL. Optional.
+  // Primary thumbnail (= first gallery image). Kept for card/list views.
   image        String?
+  // JSON array of image paths for the gallery, e.g. ["/uploads/a.jpg", ...].
+  images       String      @default("[]")
+  // JSON array of color names, e.g. ["Black","White","Navy"].
+  colors       String      @default("[]")
+  // JSON array of size labels, e.g. ["S","M","L","XL"].
+  sizes        String      @default("[]")
+  // Social proof (admin-entered; 0 = hidden).
+  ratingAvg    Float?
+  reviewsCount Int         @default(0)
+  soldCount    Int         @default(0)
+  // Estimated shipping window in days.
+  shipDaysMin  Int         @default(7)
+  shipDaysMax  Int         @default(14)
   active       Boolean     @default(true)
   // Supplier fields (used for fulfillment later).
   supplierUrl  String?

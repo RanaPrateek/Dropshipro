@@ -17,7 +17,9 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          items: items.map((i) => ({ id: i.productId, quantity: i.quantity })),
+        }),
       });
       const data = await res.json();
       if (data.url) {
@@ -57,9 +59,12 @@ export default function CheckoutPage() {
         <h2 className="font-semibold">Order summary</h2>
         <ul className="mt-4 space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex justify-between text-sm">
+            <li key={item.lineId} className="flex justify-between text-sm">
               <span>
-                {item.title} × {item.quantity}
+                {item.title}
+                {(item.color || item.size) &&
+                  ` (${[item.color, item.size].filter(Boolean).join(", ")})`}{" "}
+                × {item.quantity}
               </span>
               <span>{formatPrice(item.priceCents * item.quantity, item.currency)}</span>
             </li>

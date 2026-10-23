@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/lib/products";
 import ProductImage from "@/components/ProductImage";
+import Markdown from "@/components/Markdown";
 
 export type ProductFormValues = {
   id?: string;
@@ -11,10 +12,21 @@ export type ProductFormValues = {
   description: string;
   category: string;
   priceDollars: string;
-  image: string | null;
+  images: string[];
+  colorsText: string;
+  sizesText: string;
+  ratingAvg: string;
+  reviewsCount: string;
+  soldCount: string;
+  shipDaysMin: string;
+  shipDaysMax: string;
   supplierUrl: string;
   active: boolean;
 };
+
+const label = "block text-sm font-medium text-slate-700";
+const input =
+  "mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand-500";
 
 export default function ProductForm({
   initial,
@@ -23,45 +35,104 @@ export default function ProductForm({
 }) {
   const router = useRouter();
   const isEdit = Boolean(initial?.id);
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
-  const [values, setValues] = useState<ProductFormValues>({
+  const [v, setV] = useState<ProductFormValues>({
     id: initial?.id,
     title: initial?.title ?? "",
     description: initial?.description ?? "",
     category: initial?.category ?? CATEGORIES[0],
     priceDollars: initial?.priceDollars ?? "",
-    image: initial?.image ?? null,
+    images: initial?.images ?? [],
+    colorsText: initial?.colorsText ?? "",
+    sizesText: initial?.sizesText ?? "",
+    ratingAvg: initial?.ratingAvg ?? "",
+    reviewsCount: initial?.reviewsCount ?? "",
+    soldCount: initial?.soldCount ?? "",
+    shipDaysMin: initial?.shipDaysMin ?? "7",
+    shipDaysMax: initial?.shipDaysMax ?? "14",
     supplierUrl: initial?.supplierUrl ?? "",
     active: initial?.active ?? true,
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   function set<K extends keyof ProductFormValues>(
     key: K,
     value: ProductFormValues[K],
   ) {
-    setValues((v) => ({ ...v, [key]: value }));
+    setV((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function handleImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const isClothing = v.category.toLowerCase().includes("cloth");
+
+  async function handleImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
     setUploading(true);
     setError(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (res.ok) set("image", data.path);
-      else setError(data.error ?? "Upload failed");
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          body: fd,
+        });
+        const data = await res.json();
+        if (res.ok) uploaded.push(data.path);
+        else setError(data.error ?? "Upload failed");
+      }
+      set("images", [...v.images, ...uploaded]);
     } catch {
       setError("Image upload failed.");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeImage(idx: number) {
+    set(
+      "images",
+      v.images.filter((_, i) => i !== idx),
+    );
+  }
+
+  function makePrimary(idx: number) {
+    const next = [...v.images];
+    const [picked] = next.splice(idx, 1);
+    set("images", [picked, ...next]);
+  }
+
+  // --- description formatting helpers ---
+  function wrap(before: string, after: string) {
+    const el = descRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const text = v.description;
+    const selected = text.slice(start, end) || "text";
+    const next = text.slice(0, start) + before + selected + after + text.slice(end);
+    set("description", next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.selectionStart = start + before.length;
+      el.selectionEnd = start + before.length + selected.length;
+    });
+  }
+
+  function addBullet() {
+    const el = descRef.current;
+    const text = v.description;
+    const start = el?.selectionStart ?? text.length;
+    const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+    const next = text.slice(0, lineStart) + "- " + text.slice(lineStart);
+    set("description", next);
+    requestAnimationFrame(() => el?.focus());
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -69,26 +140,39 @@ export default function ProductForm({
     setSaving(true);
     setError(null);
 
-    const priceCents = Math.round(parseFloat(values.priceDollars) * 100);
-    if (!values.title.trim() || !Number.isFinite(priceCents) || priceCents < 0) {
+    const priceCents = Math.round(parseFloat(v.priceDollars) * 100);
+    if (!v.title.trim() || !Number.isFinite(priceCents) || priceCents < 0) {
       setError("Please enter a title and a valid price.");
       setSaving(false);
       return;
     }
 
+    const splitList = (s: string) =>
+      s
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+
     const payload = {
-      title: values.title,
-      description: values.description,
-      category: values.category,
+      title: v.title,
+      description: v.description,
+      category: v.category,
       priceCents,
-      image: values.image,
-      supplierUrl: values.supplierUrl,
-      active: values.active,
+      images: v.images,
+      colors: splitList(v.colorsText),
+      sizes: splitList(v.sizesText),
+      ratingAvg: v.ratingAvg,
+      reviewsCount: v.reviewsCount,
+      soldCount: v.soldCount,
+      shipDaysMin: v.shipDaysMin,
+      shipDaysMax: v.shipDaysMax,
+      supplierUrl: v.supplierUrl,
+      active: v.active,
     };
 
     try {
       const res = await fetch(
-        isEdit ? `/api/admin/products/${values.id}` : "/api/admin/products",
+        isEdit ? `/api/admin/products/${v.id}` : "/api/admin/products",
         {
           method: isEdit ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -109,18 +193,15 @@ export default function ProductForm({
     }
   }
 
-  const label = "block text-sm font-medium text-slate-700";
-  const input =
-    "mt-1 w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-brand-500";
-
   return (
-    <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-[1fr_280px]">
+    <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-[1fr_300px]">
+      {/* main column */}
       <div className="space-y-5">
         <div>
           <label className={label}>Product title</label>
           <input
             className={input}
-            value={values.title}
+            value={v.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="e.g. Oversized Cotton Hoodie"
           />
@@ -131,7 +212,7 @@ export default function ProductForm({
             <label className={label}>Category</label>
             <select
               className={input}
-              value={values.category}
+              value={v.category}
               onChange={(e) => set("category", e.target.value)}
             >
               {CATEGORIES.map((c) => (
@@ -148,40 +229,175 @@ export default function ProductForm({
               type="number"
               min="0"
               step="0.01"
-              value={values.priceDollars}
+              value={v.priceDollars}
               onChange={(e) => set("priceDollars", e.target.value)}
               placeholder="29.99"
             />
           </div>
         </div>
 
+        {/* description with toolbar + preview */}
         <div>
-          <label className={label}>Description</label>
-          <textarea
-            className={`${input} min-h-[120px]`}
-            value={values.description}
-            onChange={(e) => set("description", e.target.value)}
-            placeholder="Describe the product…"
-          />
+          <div className="flex items-center justify-between">
+            <label className={label}>Description</label>
+            <button
+              type="button"
+              onClick={() => setShowPreview((p) => !p)}
+              className="text-xs font-medium text-brand-600 hover:underline"
+            >
+              {showPreview ? "Edit" : "Preview"}
+            </button>
+          </div>
+
+          {!showPreview ? (
+            <>
+              <div className="mt-1 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => wrap("**", "**")}
+                  className="rounded-lg border border-slate-300 px-3 py-1 text-sm font-bold hover:bg-slate-50"
+                  title="Bold"
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={addBullet}
+                  className="rounded-lg border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
+                  title="Bullet point"
+                >
+                  • List
+                </button>
+              </div>
+              <textarea
+                ref={descRef}
+                className={`${input} min-h-[160px] font-mono text-sm`}
+                value={v.description}
+                onChange={(e) => set("description", e.target.value)}
+                placeholder={"Describe the product…\n\nUse **bold** for emphasis and\n- bullet points\n- like this"}
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                Tip: <code>**bold**</code> makes text bold; lines starting with{" "}
+                <code>- </code> become bullet points.
+              </p>
+            </>
+          ) : (
+            <div className="mt-1 min-h-[160px] rounded-xl border border-slate-200 p-4">
+              {v.description ? (
+                <Markdown content={v.description} />
+              ) : (
+                <p className="text-slate-400">Nothing to preview yet.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* colors & sizes */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={label}>Colors (comma-separated)</label>
+            <input
+              className={input}
+              value={v.colorsText}
+              onChange={(e) => set("colorsText", e.target.value)}
+              placeholder="Black, White, Navy"
+            />
+          </div>
+          <div>
+            <label className={label}>
+              Sizes (comma-separated){isClothing ? "" : " — optional"}
+            </label>
+            <input
+              className={input}
+              value={v.sizesText}
+              onChange={(e) => set("sizesText", e.target.value)}
+              placeholder={isClothing ? "S, M, L, XL" : "e.g. 64GB, 128GB"}
+            />
+            {isClothing && (
+              <p className="mt-1 text-xs text-slate-400">
+                Use standard labels (XS, S, M, L, XL, XXL) to match the size
+                guide.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* social proof + shipping */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label className={label}>Rating (0–5)</label>
+            <input
+              className={input}
+              type="number"
+              min="0"
+              max="5"
+              step="0.1"
+              value={v.ratingAvg}
+              onChange={(e) => set("ratingAvg", e.target.value)}
+              placeholder="4.6"
+            />
+          </div>
+          <div>
+            <label className={label}># Reviews</label>
+            <input
+              className={input}
+              type="number"
+              min="0"
+              value={v.reviewsCount}
+              onChange={(e) => set("reviewsCount", e.target.value)}
+              placeholder="128"
+            />
+          </div>
+          <div>
+            <label className={label}># Sold</label>
+            <input
+              className={input}
+              type="number"
+              min="0"
+              value={v.soldCount}
+              onChange={(e) => set("soldCount", e.target.value)}
+              placeholder="540"
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={label}>Shipping: min days</label>
+            <input
+              className={input}
+              type="number"
+              min="0"
+              value={v.shipDaysMin}
+              onChange={(e) => set("shipDaysMin", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className={label}>Shipping: max days</label>
+            <input
+              className={input}
+              type="number"
+              min="0"
+              value={v.shipDaysMax}
+              onChange={(e) => set("shipDaysMax", e.target.value)}
+            />
+          </div>
         </div>
 
         <div>
           <label className={label}>Supplier link (optional, private)</label>
           <input
             className={input}
-            value={values.supplierUrl}
+            value={v.supplierUrl}
             onChange={(e) => set("supplierUrl", e.target.value)}
             placeholder="https://www.aliexpress.com/item/..."
           />
-          <p className="mt-1 text-xs text-slate-400">
-            Where you order this from. Only visible to you.
-          </p>
         </div>
 
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            checked={values.active}
+            checked={v.active}
             onChange={(e) => set("active", e.target.checked)}
           />
           Visible in store
@@ -207,34 +423,66 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* Image panel */}
+      {/* images column */}
       <div>
-        <label className={label}>Product image</label>
-        <div className="mt-1 h-48 w-full overflow-hidden rounded-xl border border-slate-200">
+        <label className={label}>Product images</label>
+        <div className="mt-1 aspect-square w-full overflow-hidden rounded-xl border border-slate-200">
           <ProductImage
-            image={values.image}
-            title={values.title || "Preview"}
-            category={values.category}
+            image={v.images[0] ?? null}
+            title={v.title || "Preview"}
+            category={v.category}
           />
         </div>
+
+        {v.images.length > 0 && (
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {v.images.map((img, i) => (
+              <div key={img} className="group relative">
+                <div
+                  className={`aspect-square overflow-hidden rounded-lg border-2 ${
+                    i === 0 ? "border-brand-600" : "border-slate-200"
+                  }`}
+                >
+                  <ProductImage
+                    image={img}
+                    title={v.title}
+                    category={v.category}
+                    compact
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs text-white"
+                  title="Remove"
+                >
+                  ×
+                </button>
+                {i !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => makePrimary(i)}
+                    className="mt-1 w-full text-[10px] text-brand-600 hover:underline"
+                  >
+                    Make main
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <input
           type="file"
           accept="image/*"
-          onChange={handleImage}
+          multiple
+          onChange={handleImages}
           className="mt-3 block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
         />
         {uploading && <p className="mt-2 text-xs text-slate-400">Uploading…</p>}
-        {values.image && (
-          <button
-            type="button"
-            onClick={() => set("image", null)}
-            className="mt-2 text-xs text-red-500 hover:underline"
-          >
-            Remove image
-          </button>
-        )}
         <p className="mt-2 text-xs text-slate-400">
-          JPG, PNG, WebP or GIF · up to 5 MB. Upload your own image.
+          Upload several images — the first one is the main image. JPG, PNG,
+          WebP or GIF · up to 5 MB each.
         </p>
       </div>
     </form>
