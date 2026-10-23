@@ -35,3 +35,7 @@ next-env.d.ts
 
 # prisma
 /prisma/dev.db
+
+# uploaded product images (keep the folder, ignore contents)
+/public/uploads/*
+!/public/uploads/.gitkeep

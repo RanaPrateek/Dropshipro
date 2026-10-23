@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
+import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalCents } = useCart();
@@ -36,8 +37,13 @@ export default function CartPage() {
               key={item.id}
               className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4"
             >
-              <div className="grid h-16 w-16 flex-shrink-0 place-items-center rounded-xl bg-slate-100 text-3xl">
-                {item.emoji}
+              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
+                <ProductImage
+                  image={item.image}
+                  title={item.title}
+                  category={item.category}
+                  compact
+                />
               </div>
               <div className="flex-1">
                 <Link

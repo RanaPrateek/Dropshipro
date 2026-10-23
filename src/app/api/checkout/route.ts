@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { products } from "@/data/products";
+import { getProductsByIds } from "@/lib/products";
 
 type IncomingItem = { id: string; quantity: number };
 
@@ -29,11 +29,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Cart is empty." }, { status: 400 });
   }
 
-  // IMPORTANT: look up prices server-side from the catalog — never trust
+  // IMPORTANT: look up prices server-side from the database — never trust
   // prices sent by the client.
+  const dbProducts = await getProductsByIds(incoming.map((i) => i.id));
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   for (const item of incoming) {
-    const product = products.find((p) => p.id === item.id);
+    const product = dbProducts.find((p) => p.id === item.id);
     const qty = Math.max(1, Math.floor(item.quantity));
     if (!product) continue;
     lineItems.push({

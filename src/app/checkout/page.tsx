@@ -59,7 +59,7 @@ export default function CheckoutPage() {
           {items.map((item) => (
             <li key={item.id} className="flex justify-between text-sm">
               <span>
-                {item.emoji} {item.title} × {item.quantity}
+                {item.title} × {item.quantity}
               </span>
               <span>{formatPrice(item.priceCents * item.quantity, item.currency)}</span>
             </li>

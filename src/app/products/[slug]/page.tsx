@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, products } from "@/data/products";
+import { getProductBySlug } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductImage from "@/components/ProductImage";
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const product = await getProductBySlug(params.slug);
   return {
     title: product ? `${product.title} — Dropshipro` : "Product — Dropshipro",
   };
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = getProduct(params.slug);
+export default async function ProductPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const product = await getProductBySlug(params.slug);
   if (!product) notFound();
 
   return (
@@ -26,10 +33,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       </Link>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2">
-        <div
-          className={`flex h-80 items-center justify-center rounded-3xl bg-gradient-to-br ${product.color} text-8xl`}
-        >
-          {product.emoji}
+        <div className="h-80 overflow-hidden rounded-3xl">
+          <ProductImage
+            image={product.image}
+            title={product.title}
+            category={product.category}
+          />
         </div>
 
         <div className="flex flex-col">
@@ -37,12 +46,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             {product.category}
           </span>
           <h1 className="mt-1 text-3xl font-bold">{product.title}</h1>
-          <div className="mt-2 flex items-center gap-3">
-            <span className="text-amber-500">★ {product.rating}</span>
-            <span className="text-sm text-slate-400">In stock · Ships in 2–4 days</span>
+          <div className="mt-2 text-sm text-slate-400">
+            In stock · Ships in 2–4 days
           </div>
 
-          <p className="mt-6 leading-relaxed text-slate-600">
+          <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-600">
             {product.description}
           </p>
 

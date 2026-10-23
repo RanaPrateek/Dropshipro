@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
-import type { Product } from "@/data/products";
+import type { StoreProduct } from "@/lib/products";
 
-export default function AddToCartButton({ product }: { product: Product }) {
+export default function AddToCartButton({ product }: { product: StoreProduct }) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -15,7 +15,8 @@ export default function AddToCartButton({ product }: { product: Product }) {
       title: product.title,
       priceCents: product.priceCents,
       currency: product.currency,
-      emoji: product.emoji,
+      image: product.image,
+      category: product.category,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);

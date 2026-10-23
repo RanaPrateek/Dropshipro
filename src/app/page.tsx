@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 
-export default function HomePage() {
-  const featured = products.slice(0, 4);
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const all = await getProducts();
+  const featured = all.slice(0, 4);
 
   return (
     <div>
@@ -11,14 +14,14 @@ export default function HomePage() {
       <section className="bg-gradient-to-br from-brand-50 to-white">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center">
           <span className="inline-block rounded-full bg-brand-100 px-4 py-1 text-sm font-medium text-brand-700">
-            ✨ New drops every week
+            ✨ Clothing &amp; Electronics
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
             Trending finds, delivered to your door
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">
-            Hand-picked gadgets, home upgrades, and lifestyle gear — curated so
-            you don&apos;t have to scroll for hours.
+            Hand-picked clothing and electronics — curated so you don&apos;t
+            have to scroll for hours.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
@@ -59,11 +62,22 @@ export default function HomePage() {
             View all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+
+        {featured.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+            No products yet. Add your first product from the{" "}
+            <Link href="/admin" className="font-medium text-brand-600 hover:underline">
+              Admin panel
+            </Link>
+            .
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

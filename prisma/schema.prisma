@@ -1,37 +1,36 @@
 // Prisma schema for Dropshipro.
 //
-// NOTE: This models the data layer we wire up in Phase 2 (operator admin)
-// and Phase 4 (supplier automation). The MVP storefront currently reads its
-// catalog from src/data/products.ts; swapping that for the database is a
-// later phase. Provider is PostgreSQL per the roadmap.
+// Uses SQLite so the store runs on your machine with zero database setup —
+// data is saved to a local file (prisma/dev.db). When we put the site online
+// later, we switch the provider to PostgreSQL (the roadmap's production choice).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  slug        String      @unique
-  title       String
-  description String
-  // Price stored in minor units (cents) to avoid float issues.
-  priceCents  Int
-  currency    String      @default("usd")
-  category    String
-  imageEmoji  String?
-  imageColor  String?
-  active      Boolean     @default(true)
-  // Supplier fields (used in Phase 4).
-  supplierUrl   String?
-  supplierCost  Int?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  title        String
+  description  String
+  // Price stored in minor units (cents) to avoid floating-point issues.
+  priceCents   Int
+  currency     String      @default("usd")
+  category     String
+  // Path to an uploaded image (/uploads/...) or an external URL. Optional.
+  image        String?
+  active       Boolean     @default(true)
+  // Supplier fields (used for fulfillment later).
+  supplierUrl  String?
+  supplierCost Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderItems   OrderItem[]
 }
 
 model Customer {
@@ -47,11 +46,11 @@ model Order {
   customer        Customer?   @relation(fields: [customerId], references: [id])
   customerId      String?
   email           String
-  status          OrderStatus @default(PENDING)
+  // One of: PENDING, PAID, ORDERED_WITH_SUPPLIER, SHIPPED, DELIVERED, CANCELLED, REFUNDED
+  status          String      @default("PENDING")
   totalCents      Int
   currency        String      @default("usd")
   stripeSessionId String?     @unique
-  // Shipping address (filled at checkout).
   shippingName    String?
   shippingLine1   String?
   shippingLine2   String?
@@ -59,7 +58,6 @@ model Order {
   shippingState   String?
   shippingZip     String?
   shippingCountry String?
-  // Supplier fulfillment (Phase 4).
   supplierOrderId String?
   trackingNumber  String?
   items           OrderItem[]
@@ -81,21 +79,7 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  role      UserRole @default(ADMIN)
+  // One of: ADMIN, STAFF
+  role      String   @default("ADMIN")
   createdAt DateTime @default(now())
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  ORDERED_WITH_SUPPLIER
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  REFUNDED
-}
-
-enum UserRole {
-  ADMIN
-  STAFF
 }

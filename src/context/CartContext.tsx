@@ -15,7 +15,8 @@ export type CartItem = {
   title: string;
   priceCents: number;
   currency: string;
-  emoji: string;
+  image: string | null;
+  category: string;
   quantity: number;
 };
 

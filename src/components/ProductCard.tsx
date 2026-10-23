@@ -1,17 +1,21 @@
 import Link from "next/link";
-import type { Product } from "@/data/products";
+import type { StoreProduct } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import ProductImage from "./ProductImage";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product: StoreProduct }) {
   return (
     <Link
       href={`/products/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
     >
-      <div
-        className={`flex h-44 items-center justify-center bg-gradient-to-br ${product.color} text-6xl`}
-      >
-        <span className="transition group-hover:scale-110">{product.emoji}</span>
+      <div className="h-44 overflow-hidden">
+        <ProductImage
+          image={product.image}
+          title={product.title}
+          category={product.category}
+          className="transition duration-300 group-hover:scale-105"
+        />
       </div>
       <div className="flex flex-1 flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wide text-brand-600">
@@ -24,7 +28,6 @@ export default function ProductCard({ product }: { product: Product }) {
           <span className="text-lg font-bold">
             {formatPrice(product.priceCents, product.currency)}
           </span>
-          <span className="text-sm text-amber-500">★ {product.rating}</span>
         </div>
       </div>
     </Link>

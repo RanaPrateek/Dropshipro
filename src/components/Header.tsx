@@ -22,6 +22,9 @@ export default function Header() {
           <Link href="/products" className="hover:text-brand-600">
             Shop
           </Link>
+          <Link href="/admin" className="text-slate-400 hover:text-brand-600">
+            Admin
+          </Link>
           <Link
             href="/cart"
             className="relative rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
