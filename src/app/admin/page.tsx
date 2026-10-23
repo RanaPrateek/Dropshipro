@@ -6,7 +6,7 @@ import { LogoutButton, DeleteButton } from "@/components/admin/AdminActions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Admin — Dropshipro" };
+export const metadata = { title: "Admin — Nuvo" };
 
 export default async function AdminPage() {
   const products = await prisma.product.findMany({

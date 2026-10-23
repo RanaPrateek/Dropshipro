@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import Logo from "./Logo";
 
 export default function Header() {
   const { totalItems } = useCart();
@@ -9,13 +10,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-white">
-            D
-          </span>
-          <span>
-            Drop<span className="text-brand-600">shipro</span>
-          </span>
+        <Link href="/" aria-label="Nuvo home">
+          <Logo />
         </Link>
 
         <nav className="flex items-center gap-6 text-sm font-medium">

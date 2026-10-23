@@ -5,7 +5,7 @@ import ProductCard from "@/components/ProductCard";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Shop all products — Dropshipro",
+  title: "Shop all products — Nuvo",
 };
 
 export default async function ProductsPage({

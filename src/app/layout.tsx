@@ -5,9 +5,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Dropshipro — Curated finds, shipped to your door",
+  title: "Nuvo — Curated finds, shipped to your door",
   description:
-    "Discover trending products at Dropshipro. Fast shipping, secure checkout, 30-day returns.",
+    "Discover trending products at Nuvo. Fast shipping, secure checkout, 30-day returns.",
 };
 
 export default function RootLayout({

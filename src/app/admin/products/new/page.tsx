@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ProductForm from "@/components/admin/ProductForm";
 
-export const metadata = { title: "Add product — Dropshipro" };
+export const metadata = { title: "Add product — Nuvo" };
 
 export default function NewProductPage() {
   return (

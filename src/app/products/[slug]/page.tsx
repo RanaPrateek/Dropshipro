@@ -12,7 +12,7 @@ export async function generateMetadata({
 }) {
   const product = await getProductBySlug(params.slug);
   return {
-    title: product ? `${product.title} — Dropshipro` : "Product — Dropshipro",
+    title: product ? `${product.title} — Nuvo` : "Product — Nuvo",
   };
 }
 

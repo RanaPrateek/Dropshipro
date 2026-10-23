@@ -5,7 +5,7 @@ import { toStoreProduct } from "@/lib/products";
 import ProductForm from "@/components/admin/ProductForm";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Edit product — Dropshipro" };
+export const metadata = { title: "Edit product — Nuvo" };
 
 export default async function EditProductPage({
   params,
