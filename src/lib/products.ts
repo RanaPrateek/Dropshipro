@@ -8,6 +8,7 @@ export type StoreProduct = {
   title: string;
   description: string;
   priceCents: number;
+  compareAtCents: number | null;
   currency: string;
   category: string;
   image: string | null;
@@ -22,7 +23,21 @@ export type StoreProduct = {
 };
 
 /** The categories this store sells. */
-export const CATEGORIES = ["Clothing", "Electronics"] as const;
+export const CATEGORIES = ["Women", "Men", "Electronics"] as const;
+
+/** Apparel categories use the clothing size guide. */
+export function isApparel(category: string): boolean {
+  const c = category.toLowerCase();
+  return c === "women" || c === "men" || c.includes("cloth");
+}
+
+/** A product is "on sale" when it has a higher compare-at price. */
+export function isOnSale(p: {
+  priceCents: number;
+  compareAtCents: number | null;
+}): boolean {
+  return p.compareAtCents != null && p.compareAtCents > p.priceCents;
+}
 
 /** Safely parse a JSON-array string column into a string[]. */
 function parseList(value: unknown): string[] {
@@ -41,6 +56,7 @@ type RawProduct = {
   title: string;
   description: string;
   priceCents: number;
+  compareAtCents: number | null;
   currency: string;
   category: string;
   image: string | null;
@@ -62,6 +78,7 @@ export function toStoreProduct(p: RawProduct): StoreProduct {
     title: p.title,
     description: p.description,
     priceCents: p.priceCents,
+    compareAtCents: p.compareAtCents,
     currency: p.currency,
     category: p.category,
     image: p.image ?? images[0] ?? null,
@@ -76,12 +93,37 @@ export function toStoreProduct(p: RawProduct): StoreProduct {
   };
 }
 
-export async function getProducts(category?: string): Promise<StoreProduct[]> {
+export async function getProducts(
+  category?: string,
+  q?: string,
+): Promise<StoreProduct[]> {
+  const term = q?.trim();
   const rows = await prisma.product.findMany({
-    where: { active: true, ...(category ? { category } : {}) },
+    where: {
+      active: true,
+      ...(category ? { category } : {}),
+      ...(term
+        ? {
+            OR: [
+              { title: { contains: term } },
+              { description: { contains: term } },
+              { category: { contains: term } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { createdAt: "desc" },
   });
   return rows.map(toStoreProduct);
+}
+
+/** Products currently on sale (have a higher compare-at price). */
+export async function getDeals(limit = 4): Promise<StoreProduct[]> {
+  const rows = await prisma.product.findMany({
+    where: { active: true, compareAtCents: { not: null } },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map(toStoreProduct).filter(isOnSale).slice(0, limit);
 }
 
 export async function getProductBySlug(

@@ -53,6 +53,12 @@ export function colorToCss(name: string): string | null {
   return map[name.trim().toLowerCase()] ?? null;
 }
 
+/** Percentage off, given a sale price and original (compare-at) price. */
+export function discountPercent(priceCents: number, compareAtCents: number): number {
+  if (compareAtCents <= priceCents) return 0;
+  return Math.round(((compareAtCents - priceCents) / compareAtCents) * 100);
+}
+
 /** Format an estimated delivery window from today + a day range. */
 export function deliveryWindow(minDays: number, maxDays: number): string {
   const fmt = (d: Date) =>

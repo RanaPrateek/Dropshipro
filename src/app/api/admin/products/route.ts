@@ -40,6 +40,10 @@ export async function POST(req: Request) {
       description,
       category,
       priceCents,
+      compareAtCents:
+        body.compareAtCents != null && body.compareAtCents !== ""
+          ? Math.round(Number(body.compareAtCents))
+          : null,
       currency: body.currency || "usd",
       image: images[0] ?? null,
       images: JSON.stringify(images),

@@ -21,7 +21,11 @@ model Product {
   description  String
   // Price stored in minor units (cents) to avoid floating-point issues.
   priceCents   Int
+  // Original ("compare at") price in cents. When set and higher than
+  // priceCents, the product shows as on sale / a deal.
+  compareAtCents Int?
   currency     String      @default("usd")
+  // One of: Women, Men, Electronics
   category     String
   // Primary thumbnail (= first gallery image). Kept for card/list views.
   image        String?

@@ -31,6 +31,8 @@ export default async function EditProductPage({
             description: p.description,
             category: p.category,
             priceDollars: (p.priceCents / 100).toFixed(2),
+            compareAtDollars:
+              p.compareAtCents != null ? (p.compareAtCents / 100).toFixed(2) : "",
             images: p.images,
             colorsText: p.colors.join(", "),
             sizesText: p.sizes.join(", "),

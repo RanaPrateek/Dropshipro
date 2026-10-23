@@ -11,12 +11,13 @@ export const metadata = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: { category?: string; q?: string };
 }) {
   const selected = CATEGORIES.find(
     (c) => c.toLowerCase() === (searchParams.category ?? "").toLowerCase(),
   );
-  const products = await getProducts(selected);
+  const q = searchParams.q?.trim();
+  const products = await getProducts(selected, q);
 
   const chip = (label: string, href: string, active: boolean) => (
     <Link
@@ -25,7 +26,7 @@ export default async function ProductsPage({
       className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
         active
           ? "bg-brand-600 text-white"
-          : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+          : "border border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
       }`}
     >
       {label}
@@ -33,32 +34,37 @@ export default async function ProductsPage({
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
+    <div className="mx-auto max-w-7xl px-4 py-12">
       <h1 className="text-3xl font-bold">
-        {selected ? selected : "All products"}
+        {q ? `Results for “${q}”` : selected ? selected : "All products"}
       </h1>
-      <p className="mt-2 text-slate-500">
-        {products.length} {products.length === 1 ? "item" : "items"} ready to ship.
+      <p className="mt-2 text-slate-500 dark:text-slate-400">
+        {products.length} {products.length === 1 ? "item" : "items"}
+        {q ? "" : " ready to ship."}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {chip("All", "/products", !selected)}
-        {CATEGORIES.map((c) =>
-          chip(
-            c,
-            `/products?category=${encodeURIComponent(c)}`,
-            selected === c,
-          ),
-        )}
-      </div>
+      {!q && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {chip("All", "/products", !selected)}
+          {CATEGORIES.map((c) =>
+            chip(c, `/products?category=${encodeURIComponent(c)}`, selected === c),
+          )}
+        </div>
+      )}
 
       {products.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-          Nothing here yet. Add products from the{" "}
-          <Link href="/admin" className="font-medium text-brand-600 hover:underline">
-            Admin panel
-          </Link>
-          .
+        <div className="mt-10 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          {q ? (
+            <>No products match “{q}”. Try a different search.</>
+          ) : (
+            <>
+              Nothing here yet. Add products from the{" "}
+              <Link href="/admin" className="font-medium text-brand-600 hover:underline">
+                Admin panel
+              </Link>
+              .
+            </>
+          )}
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-6 lg:grid-cols-4">

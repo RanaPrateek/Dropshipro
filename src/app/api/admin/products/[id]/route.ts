@@ -34,6 +34,10 @@ export async function PUT(
       description: (body.description ?? existing.description).trim(),
       category: (body.category ?? existing.category).trim(),
       priceCents: Number.isFinite(priceCents) ? priceCents : existing.priceCents,
+      compareAtCents:
+        body.compareAtCents != null && body.compareAtCents !== ""
+          ? Math.round(Number(body.compareAtCents))
+          : null,
       image: images[0] ?? null,
       images: JSON.stringify(images),
       colors: JSON.stringify(toStringArray(body.colors)),

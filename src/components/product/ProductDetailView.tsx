@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { StoreProduct } from "@/lib/products";
+import { type StoreProduct, isApparel, isOnSale } from "@/lib/products";
 import { useCart } from "@/context/CartContext";
-import { formatPrice, colorToCss, deliveryWindow } from "@/lib/format";
+import {
+  formatPrice,
+  colorToCss,
+  deliveryWindow,
+  discountPercent,
+} from "@/lib/format";
 import ProductImage from "@/components/ProductImage";
 import Markdown from "@/components/Markdown";
 import SizeGuide from "./SizeGuide";
@@ -34,9 +39,34 @@ export default function ProductDetailView({
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
-  const isClothing = product.category.toLowerCase().includes("cloth");
+  const apparel = isApparel(product.category);
+  const onSale = isOnSale(product);
+  const pct =
+    onSale && product.compareAtCents
+      ? discountPercent(product.priceCents, product.compareAtCents)
+      : 0;
   const needsColor = product.colors.length > 0;
   const needsSize = product.sizes.length > 0;
+
+  function PriceBlock() {
+    return (
+      <div className="flex flex-wrap items-baseline gap-2">
+        <span className="text-3xl font-extrabold">
+          {formatPrice(product.priceCents, product.currency)}
+        </span>
+        {onSale && product.compareAtCents && (
+          <>
+            <span className="text-lg text-slate-400 line-through">
+              {formatPrice(product.compareAtCents, product.currency)}
+            </span>
+            <span className="rounded-full bg-rose-600 px-2 py-0.5 text-xs font-bold text-white">
+              -{pct}%
+            </span>
+          </>
+        )}
+      </div>
+    );
+  }
 
   function buildItem() {
     return {
@@ -129,8 +159,8 @@ export default function ProductDetailView({
           )}
         </div>
 
-        <div className="mt-4 text-3xl font-extrabold">
-          {formatPrice(product.priceCents, product.currency)}
+        <div className="mt-4">
+          <PriceBlock />
         </div>
 
         {/* colors */}
@@ -192,7 +222,7 @@ export default function ProductDetailView({
                 );
               })}
             </div>
-            {isClothing && <SizeGuide sizes={product.sizes} />}
+            {apparel && <SizeGuide sizes={product.sizes} />}
           </div>
         )}
 
@@ -208,12 +238,10 @@ export default function ProductDetailView({
       </div>
 
       {/* RIGHT — purchase panel */}
-      <div className="h-fit rounded-2xl border border-slate-200 p-5 lg:sticky lg:top-24">
-        <div className="text-2xl font-extrabold">
-          {formatPrice(product.priceCents, product.currency)}
-        </div>
+      <div className="h-fit rounded-2xl border border-slate-200 p-5 dark:border-slate-800 lg:sticky lg:top-28">
+        <PriceBlock />
 
-        <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm">
+        <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
           <div className="flex items-center gap-2 text-slate-700">
             <span>🚚</span>
             <span>

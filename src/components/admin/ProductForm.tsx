@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORIES } from "@/lib/products";
+import { CATEGORIES, isApparel } from "@/lib/products";
 import ProductImage from "@/components/ProductImage";
 import Markdown from "@/components/Markdown";
 
@@ -12,6 +12,7 @@ export type ProductFormValues = {
   description: string;
   category: string;
   priceDollars: string;
+  compareAtDollars: string;
   images: string[];
   colorsText: string;
   sizesText: string;
@@ -43,6 +44,7 @@ export default function ProductForm({
     description: initial?.description ?? "",
     category: initial?.category ?? CATEGORIES[0],
     priceDollars: initial?.priceDollars ?? "",
+    compareAtDollars: initial?.compareAtDollars ?? "",
     images: initial?.images ?? [],
     colorsText: initial?.colorsText ?? "",
     sizesText: initial?.sizesText ?? "",
@@ -66,7 +68,7 @@ export default function ProductForm({
     setV((prev) => ({ ...prev, [key]: value }));
   }
 
-  const isClothing = v.category.toLowerCase().includes("cloth");
+  const apparel = isApparel(v.category);
 
   async function handleImages(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -153,11 +155,17 @@ export default function ProductForm({
         .map((x) => x.trim())
         .filter(Boolean);
 
+    const compareRaw = parseFloat(v.compareAtDollars);
+    const compareAtCents = Number.isFinite(compareRaw)
+      ? Math.round(compareRaw * 100)
+      : null;
+
     const payload = {
       title: v.title,
       description: v.description,
       category: v.category,
       priceCents,
+      compareAtCents,
       images: v.images,
       colors: splitList(v.colorsText),
       sizes: splitList(v.sizesText),
@@ -236,6 +244,23 @@ export default function ProductForm({
           </div>
         </div>
 
+        <div>
+          <label className={label}>Compare-at price (optional)</label>
+          <input
+            className={input}
+            type="number"
+            min="0"
+            step="0.01"
+            value={v.compareAtDollars}
+            onChange={(e) => set("compareAtDollars", e.target.value)}
+            placeholder="39.99"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            The original price. If higher than the price, the product shows as a
+            deal (appears in Today&apos;s Deals with a discount badge).
+          </p>
+        </div>
+
         {/* description with toolbar + preview */}
         <div>
           <div className="flex items-center justify-between">
@@ -305,15 +330,15 @@ export default function ProductForm({
           </div>
           <div>
             <label className={label}>
-              Sizes (comma-separated){isClothing ? "" : " — optional"}
+              Sizes (comma-separated){apparel ? "" : " — optional"}
             </label>
             <input
               className={input}
               value={v.sizesText}
               onChange={(e) => set("sizesText", e.target.value)}
-              placeholder={isClothing ? "S, M, L, XL" : "e.g. 64GB, 128GB"}
+              placeholder={apparel ? "S, M, L, XL" : "e.g. 64GB, 128GB"}
             />
-            {isClothing && (
+            {apparel && (
               <p className="mt-1 text-xs text-slate-400">
                 Use standard labels (XS, S, M, L, XL, XXL) to match the size
                 guide.
