@@ -9,8 +9,13 @@ export async function POST(req: Request) {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+  // Treat a missing key — or the placeholder from .env.example — as "not
+  // configured" so the store works out of the box without real Stripe keys.
+  const stripeConfigured =
+    !!secretKey && secretKey.startsWith("sk_") && !secretKey.includes("...");
+
   // Graceful fallback when Stripe isn't configured yet (dev / MVP).
-  if (!secretKey) {
+  if (!stripeConfigured) {
     return NextResponse.json({
       message:
         "Stripe isn't configured yet. Add STRIPE_SECRET_KEY to your .env to enable live payments. (The storefront and cart are fully working.)",
@@ -54,7 +59,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const stripe = new Stripe(secretKey);
+  const stripe = new Stripe(secretKey as string);
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
