@@ -52,8 +52,22 @@ export async function POST(
     if (order) verified = true;
   }
 
+  const images = Array.isArray(body.images)
+    ? body.images
+        .filter((x: unknown) => typeof x === "string" && x.startsWith("/uploads/"))
+        .slice(0, 5)
+    : [];
+
   const review = await prisma.review.create({
-    data: { productId: params.id, authorName, body: bodyText, title, rating, verified },
+    data: {
+      productId: params.id,
+      authorName,
+      body: bodyText,
+      title,
+      rating,
+      verified,
+      images: JSON.stringify(images),
+    },
   });
 
   return NextResponse.json({ ok: true, id: review.id }, { status: 201 });

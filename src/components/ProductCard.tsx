@@ -3,6 +3,7 @@ import { type StoreProduct, isOnSale, stockBadge } from "@/lib/products";
 import { discountPercent } from "@/lib/format";
 import ProductImage from "./ProductImage";
 import Price from "./Price";
+import Countdown from "./Countdown";
 
 export default function ProductCard({ product }: { product: StoreProduct }) {
   const onSale = isOnSale(product);
@@ -59,6 +60,12 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
             />
           )}
         </div>
+        {onSale && product.dealExpiresAt && (
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <span>Ends in</span>
+            <Countdown expiresAt={product.dealExpiresAt} compact />
+          </div>
+        )}
       </div>
     </Link>
   );

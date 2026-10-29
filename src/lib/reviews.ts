@@ -6,9 +6,20 @@ export type StoreReview = {
   rating: number;
   title: string | null;
   body: string;
+  images: string[];
   verified: boolean;
   createdAt: string;
 };
+
+function parseList(value: unknown): string[] {
+  if (typeof value !== "string" || !value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
 
 export type ReviewSummary = {
   count: number;
@@ -26,6 +37,7 @@ export async function getReviews(productId: string): Promise<StoreReview[]> {
     rating: r.rating,
     title: r.title,
     body: r.body,
+    images: parseList(r.images),
     verified: r.verified,
     createdAt: r.createdAt.toISOString(),
   }));

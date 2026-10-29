@@ -67,6 +67,8 @@ model Review {
   rating     Int // 1–5
   title      String?
   body       String
+  // JSON array of uploaded photo paths, e.g. ["/uploads/x.jpg"].
+  images     String   @default("[]")
   // True when the reviewer is a confirmed buyer (set once orders exist).
   verified   Boolean  @default(false)
   createdAt  DateTime @default(now())

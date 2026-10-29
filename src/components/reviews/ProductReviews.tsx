@@ -72,6 +72,20 @@ export default function ProductReviews({
               <p className="mt-1 whitespace-pre-line text-slate-600 dark:text-slate-300">
                 {r.body}
               </p>
+              {r.images.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {r.images.map((img) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <a key={img} href={img} target="_blank" rel="noreferrer">
+                      <img
+                        src={img}
+                        alt="Customer photo"
+                        className="h-20 w-20 rounded-lg object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              )}
               <p className="mt-2 text-xs text-slate-400">
                 {r.authorName} · {timeAgo(r.createdAt)}
               </p>

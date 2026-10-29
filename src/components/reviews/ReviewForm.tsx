@@ -17,9 +17,35 @@ export default function ReviewForm({
   const [authorName, setAuthorName] = useState("");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  async function handlePhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []).slice(0, 5);
+    if (files.length === 0) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const uploaded: string[] = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/reviews/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (res.ok) uploaded.push(data.path);
+        else setError(data.error ?? "Photo upload failed");
+      }
+      setImages((prev) => [...prev, ...uploaded].slice(0, 5));
+    } catch {
+      setError("Photo upload failed.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +56,7 @@ export default function ReviewForm({
       const res = await fetch(`/api/products/${productId}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ authorName, title, body, rating, orderNumber: orderToken }),
+        body: JSON.stringify({ authorName, title, body, rating, images, orderNumber: orderToken }),
       });
       if (res.ok) {
         setDone(true);
@@ -38,6 +64,7 @@ export default function ReviewForm({
         setAuthorName("");
         setTitle("");
         setBody("");
+        setImages([]);
         router.refresh();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -126,11 +153,42 @@ export default function ReviewForm({
           placeholder="What did you think of the product?"
         />
       </div>
+
+      <div>
+        <label className="text-sm font-medium">Add photos (optional)</label>
+        {images.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {images.map((img) => (
+              <div key={img} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img} alt="review" className="h-16 w-16 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImages((p) => p.filter((x) => x !== img))}
+                  className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-red-500 text-xs text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handlePhotos}
+          className="mt-2 block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+        />
+        {uploading && <p className="mt-1 text-xs text-slate-400">Uploading…</p>}
+        <p className="mt-1 text-xs text-slate-400">Up to 5 photos · JPG, PNG, WebP, GIF.</p>
+      </div>
+
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex gap-3">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || uploading}
           className="rounded-xl bg-brand-600 px-6 py-2.5 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
         >
           {saving ? "Submitting…" : "Submit review"}
