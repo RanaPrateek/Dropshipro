@@ -15,6 +15,7 @@ import ProductImage from "@/components/ProductImage";
 import Markdown from "@/components/Markdown";
 import Price from "@/components/Price";
 import Countdown from "@/components/Countdown";
+import FavoriteButton from "@/components/FavoriteButton";
 import { TruckIcon } from "@/components/Icons";
 import SizeGuide from "./SizeGuide";
 
@@ -354,6 +355,19 @@ export default function ProductDetailView({
           >
             {added ? "✓ Added to cart" : "Add to cart"}
           </button>
+          <FavoriteButton
+            variant="inline"
+            item={{
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+              priceCents: product.priceCents,
+              compareAtCents: product.compareAtCents,
+              image: product.image,
+              category: product.category,
+              dealExpiresAt: product.dealExpiresAt,
+            }}
+          />
         </div>
       </div>
     </div>

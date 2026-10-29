@@ -77,11 +77,13 @@ model Review {
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  orders    Order[]
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  // Set when the customer registers an account (guests from checkout have none).
+  passwordHash String?
+  orders       Order[]
+  createdAt    DateTime @default(now())
 }
 
 model Order {

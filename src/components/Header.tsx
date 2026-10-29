@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useCustomer } from "@/context/CustomerContext";
+import { useFavorites } from "@/context/FavoritesContext";
 import { CATEGORIES } from "@/lib/products";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
@@ -39,6 +41,8 @@ const ICONS = {
 export default function Header() {
   const router = useRouter();
   const { totalItems } = useCart();
+  const { customer, loading, openAuth } = useCustomer();
+  const { count: favCount } = useFavorites();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -62,12 +66,23 @@ export default function Header() {
           </span>
           <div className="flex items-center gap-2">
             <CurrencySwitcher />
-            <Link
-              href="/account"
-              className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"
-            >
-              Sign in / Register
-            </Link>
+            {loading ? (
+              <span className="w-20" />
+            ) : customer ? (
+              <Link
+                href="/account"
+                className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"
+              >
+                Hi, {customer.name?.split(" ")[0] || "account"}
+              </Link>
+            ) : (
+              <button
+                onClick={openAuth}
+                className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"
+              >
+                Sign in / Register
+              </button>
+            )}
             <ThemeToggle className="h-7 w-7 text-sm" />
           </div>
         </div>
@@ -134,8 +149,13 @@ export default function Header() {
               className="ml-2 w-40 bg-transparent text-sm outline-none placeholder:text-slate-400"
             />
           </form>
-          <Link href="/favorites" className={iconBtn} aria-label="Favorites">
+          <Link href="/favorites" className={`${iconBtn} relative`} aria-label="Favorites">
             <Icon path={ICONS.heart} label="Favorites" />
+            {favCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 grid h-4 w-4 place-items-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                {favCount}
+              </span>
+            )}
           </Link>
           <Link href="/account" className={`${iconBtn} hidden sm:grid`} aria-label="Profile">
             <Icon path={ICONS.user} label="Profile" />

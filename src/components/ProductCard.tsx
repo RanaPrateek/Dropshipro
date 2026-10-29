@@ -4,6 +4,7 @@ import { discountPercent } from "@/lib/format";
 import ProductImage from "./ProductImage";
 import Price from "./Price";
 import Countdown from "./Countdown";
+import FavoriteButton from "./FavoriteButton";
 
 export default function ProductCard({ product }: { product: StoreProduct }) {
   const onSale = isOnSale(product);
@@ -30,9 +31,23 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
             -{pct}%
           </span>
         )}
+        <div className="absolute right-2 top-2">
+          <FavoriteButton
+            item={{
+              id: product.id,
+              slug: product.slug,
+              title: product.title,
+              priceCents: product.priceCents,
+              compareAtCents: product.compareAtCents,
+              image: product.image,
+              category: product.category,
+              dealExpiresAt: product.dealExpiresAt,
+            }}
+          />
+        </div>
         {badge && (
           <span
-            className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            className={`absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               badge.tone === "out"
                 ? "bg-slate-700 text-white"
                 : badge.tone === "low"

@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
+import { CustomerProvider } from "@/context/CustomerContext";
+import { FavoritesProvider } from "@/context/FavoritesContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AuthModal from "@/components/AuthModal";
 
 export const metadata: Metadata = {
   title: "Nuvo — Curated finds, shipped to your door",
@@ -35,11 +38,16 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-screen flex-col bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <CurrencyProvider>
-          <CartProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </CartProvider>
+          <CustomerProvider>
+            <FavoritesProvider>
+              <CartProvider>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <AuthModal />
+              </CartProvider>
+            </FavoritesProvider>
+          </CustomerProvider>
         </CurrencyProvider>
       </body>
     </html>
