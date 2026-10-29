@@ -32,11 +32,23 @@ function Stars({ value }: { value: number }) {
 
 export default function ProductDetailView({
   product,
+  reviewSummary,
 }: {
   product: StoreProduct;
+  reviewSummary?: { count: number; average: number };
 }) {
   const router = useRouter();
   const { addItem } = useCart();
+
+  // Prefer real review data; fall back to admin-entered rating/count.
+  const ratingValue =
+    reviewSummary && reviewSummary.count > 0
+      ? reviewSummary.average
+      : product.ratingAvg;
+  const ratingCount =
+    reviewSummary && reviewSummary.count > 0
+      ? reviewSummary.count
+      : product.reviewsCount;
 
   const gallery = useMemo<(string | null)[]>(
     () =>
@@ -169,14 +181,14 @@ export default function ProductDetailView({
         <h1 className="mt-1 text-2xl font-bold leading-snug">{product.title}</h1>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          {product.ratingAvg ? (
-            <span className="flex items-center gap-1">
-              <Stars value={product.ratingAvg} />
+          {ratingValue ? (
+            <a href="#reviews" className="flex items-center gap-1 hover:underline">
+              <Stars value={ratingValue} />
               <span className="text-slate-500 dark:text-slate-400">
-                {product.ratingAvg.toFixed(1)}
-                {product.reviewsCount > 0 && ` · ${product.reviewsCount} reviews`}
+                {ratingValue.toFixed(1)}
+                {ratingCount > 0 && ` · ${ratingCount} reviews`}
               </span>
-            </span>
+            </a>
           ) : (
             <span className="text-slate-400">No reviews yet</span>
           )}

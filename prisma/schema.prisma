@@ -56,6 +56,22 @@ model Product {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   orderItems   OrderItem[]
+  reviews      Review[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  authorName String
+  rating     Int // 1–5
+  title      String?
+  body       String
+  // True when the reviewer is a confirmed buyer (set once orders exist).
+  verified   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([productId])
 }
 
 model Customer {

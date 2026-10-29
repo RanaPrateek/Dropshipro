@@ -81,15 +81,33 @@ const samples = [
   },
 ];
 
+const sampleReviews = {
+  "sample-womens-hoodie": [
+    { authorName: "Jessica M.", rating: 5, title: "So cosy!", body: "Super soft and warm, fits true to size. Will buy another colour.", verified: true },
+    { authorName: "Dana R.", rating: 4, title: "Great value", body: "Good quality for the price. Slightly long sleeves but I love it.", verified: true },
+  ],
+  "sample-wireless-earbuds": [
+    { authorName: "Tom K.", rating: 5, title: "Impressive sound", body: "Battery lasts all day and pairing was instant.", verified: true },
+    { authorName: "Priya S.", rating: 4, title: "Good for the price", body: "Comfortable and clear. Case is compact.", verified: false },
+  ],
+};
+
 async function main() {
   for (const p of samples) {
-    await prisma.product.upsert({
+    const created = await prisma.product.upsert({
       where: { slug: p.slug },
       update: {},
       create: p,
     });
+    const reviews = sampleReviews[p.slug] ?? [];
+    const existing = await prisma.review.count({ where: { productId: created.id } });
+    if (existing === 0) {
+      for (const r of reviews) {
+        await prisma.review.create({ data: { ...r, productId: created.id } });
+      }
+    }
   }
-  console.log(`Seeded ${samples.length} example products.`);
+  console.log(`Seeded ${samples.length} example products with reviews.`);
 }
 
 main()
