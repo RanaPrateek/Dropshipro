@@ -12,16 +12,27 @@ export default function Countdown({
   className?: string;
   compact?: boolean;
 }) {
-  const [remaining, setRemaining] = useState<number>(() =>
-    Math.max(0, new Date(expiresAt).getTime() - Date.now()),
-  );
+  // Start as null so the server render and the first client render match
+  // (avoids a hydration mismatch from the clock advancing). The real value is
+  // computed once mounted in the browser.
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    const id = setInterval(() => {
+    const tick = () =>
       setRemaining(Math.max(0, new Date(expiresAt).getTime() - Date.now()));
-    }, 1000);
+    tick();
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [expiresAt]);
+
+  // Before the timer is running, render a stable placeholder.
+  if (remaining === null) {
+    return (
+      <span className={`tabular-nums text-rose-600 ${className}`} suppressHydrationWarning>
+        --:--:--
+      </span>
+    );
+  }
 
   if (remaining <= 0) {
     return (
