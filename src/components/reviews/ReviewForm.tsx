@@ -3,9 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ReviewForm({ productId }: { productId: string }) {
+export default function ReviewForm({
+  productId,
+  orderToken,
+}: {
+  productId: string;
+  orderToken?: string;
+}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(orderToken));
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [authorName, setAuthorName] = useState("");
@@ -24,7 +30,7 @@ export default function ReviewForm({ productId }: { productId: string }) {
       const res = await fetch(`/api/products/${productId}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ authorName, title, body, rating }),
+        body: JSON.stringify({ authorName, title, body, rating, orderNumber: orderToken }),
       });
       if (res.ok) {
         setDone(true);

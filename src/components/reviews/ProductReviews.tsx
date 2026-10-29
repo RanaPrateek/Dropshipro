@@ -24,10 +24,12 @@ export default function ProductReviews({
   productId,
   reviews,
   summary,
+  orderToken,
 }: {
   productId: string;
   reviews: StoreReview[];
   summary: ReviewSummary;
+  orderToken?: string;
 }) {
   return (
     <section
@@ -51,7 +53,7 @@ export default function ProductReviews({
             </p>
           )}
         </div>
-        <ReviewForm productId={productId} />
+        <ReviewForm productId={productId} orderToken={orderToken} />
       </div>
 
       {reviews.length > 0 && (

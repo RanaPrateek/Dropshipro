@@ -36,8 +36,24 @@ export async function POST(
     );
   }
 
+  // Mark as a verified buyer if the review links to a delivered order that
+  // actually contains this product (link comes from the "leave a review" email).
+  let verified = false;
+  const orderNumber = body.orderNumber ? String(body.orderNumber).trim() : "";
+  if (orderNumber) {
+    const order = await prisma.order.findFirst({
+      where: {
+        orderNumber: orderNumber.toUpperCase(),
+        status: "DELIVERED",
+        items: { some: { productId: params.id } },
+      },
+      select: { id: true },
+    });
+    if (order) verified = true;
+  }
+
   const review = await prisma.review.create({
-    data: { productId: params.id, authorName, body: bodyText, title, rating },
+    data: { productId: params.id, authorName, body: bodyText, title, rating, verified },
   });
 
   return NextResponse.json({ ok: true, id: review.id }, { status: 201 });

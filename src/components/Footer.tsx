@@ -20,6 +20,7 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold">Customer Service</h3>
             <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><Link href="/track" className="hover:text-brand-600">Track my order</Link></li>
               <li><Link href="/account" className="hover:text-brand-600">Contact us</Link></li>
               <li><Link href="/account" className="hover:text-brand-600">FAQ</Link></li>
               <li><Link href="/account" className="hover:text-brand-600">Shipping info</Link></li>

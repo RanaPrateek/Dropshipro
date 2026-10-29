@@ -20,8 +20,10 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { review?: string };
 }) {
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
@@ -43,6 +45,7 @@ export default async function ProductPage({
         productId={product.id}
         reviews={reviews}
         summary={summary}
+        orderToken={searchParams.review}
       />
     </div>
   );

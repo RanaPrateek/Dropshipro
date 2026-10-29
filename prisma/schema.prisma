@@ -84,6 +84,8 @@ model Customer {
 
 model Order {
   id              String      @id @default(cuid())
+  // Human-friendly order number, e.g. NUVO-7F3K9Q2A.
+  orderNumber     String      @unique
   customer        Customer?   @relation(fields: [customerId], references: [id])
   customerId      String?
   email           String
@@ -101,17 +103,28 @@ model Order {
   shippingCountry String?
   supplierOrderId String?
   trackingNumber  String?
+  carrier         String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  // Set once the "leave a review" email has been sent for this order.
+  reviewRequestSent Boolean   @default(false)
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
-  id         String  @id @default(cuid())
-  order      Order   @relation(fields: [orderId], references: [id])
+  id         String   @id @default(cuid())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId    String
-  product    Product @relation(fields: [productId], references: [id])
-  productId  String
+  product    Product? @relation(fields: [productId], references: [id])
+  productId  String?
+  // Snapshot of the product at purchase time (stays stable if the product changes).
+  title      String
+  slug       String?
+  image      String?
+  color      String?
+  size       String?
   quantity   Int
   priceCents Int
 }

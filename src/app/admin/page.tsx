@@ -24,6 +24,9 @@ export default async function AdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <Link href="/admin/orders" className="text-sm font-medium text-slate-500 hover:text-brand-600">
+            Orders
+          </Link>
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-800">
             View store
           </Link>
