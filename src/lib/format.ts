@@ -20,8 +20,10 @@ export function slugify(input: string): string {
 /** Tailwind gradient used as an image placeholder, chosen by category. */
 export function categoryGradient(category: string): string {
   const key = category.toLowerCase();
-  if (key.includes("cloth")) return "from-rose-400 to-pink-600";
-  if (key.includes("electro")) return "from-sky-500 to-indigo-600";
+  if (key === "women" || key.includes("cloth")) return "from-rose-400 to-pink-600";
+  if (key === "men") return "from-blue-400 to-indigo-600";
+  if (key === "electronics" || key.includes("electro"))
+    return "from-sky-500 to-indigo-600";
   return "from-slate-400 to-slate-600";
 }
 

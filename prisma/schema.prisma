@@ -33,8 +33,15 @@ model Product {
   images       String      @default("[]")
   // JSON array of color names, e.g. ["Black","White","Navy"].
   colors       String      @default("[]")
+  // JSON object mapping a color name to one of the gallery images,
+  // e.g. {"Black":"/uploads/a.jpg","White":"/uploads/b.jpg"}.
+  colorImages  String      @default("{}")
   // JSON array of size labels, e.g. ["S","M","L","XL"].
   sizes        String      @default("[]")
+  // Inventory count. Null = not tracked (no stock badge shown).
+  stock        Int?
+  // When a deal's 24h countdown ends. Null = not on a timed deal.
+  dealExpiresAt DateTime?
   // Social proof (admin-entered; 0 = hidden).
   ratingAvg    Float?
   reviewsCount Int         @default(0)

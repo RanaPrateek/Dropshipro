@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatPrice } from "@/lib/format";
+import Price from "@/components/Price";
+import { ShieldIcon } from "@/components/Icons";
 
 export default function CheckoutPage() {
   const { items, totalCents } = useCart();
@@ -66,13 +67,13 @@ export default function CheckoutPage() {
                   ` (${[item.color, item.size].filter(Boolean).join(", ")})`}{" "}
                 × {item.quantity}
               </span>
-              <span>{formatPrice(item.priceCents * item.quantity, item.currency)}</span>
+              <Price cents={item.priceCents * item.quantity} />
             </li>
           ))}
         </ul>
-        <div className="mt-4 flex justify-between border-t border-slate-200 pt-4 text-lg font-bold">
+        <div className="mt-4 flex justify-between border-t border-slate-200 pt-4 text-lg font-bold dark:border-slate-700">
           <span>Total</span>
-          <span>{formatPrice(totalCents)}</span>
+          <Price cents={totalCents} />
         </div>
       </div>
 
@@ -90,9 +91,10 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <p className="mt-4 text-center text-xs text-slate-400">
-        🔒 Payments are processed securely by Stripe. Card details never touch
-        our servers.
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
+        <ShieldIcon className="h-4 w-4" />
+        Payments are processed securely by Stripe. Card details never touch our
+        servers.
       </p>
     </div>
   );

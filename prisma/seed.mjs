@@ -7,6 +7,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
 const samples = [
   {
     slug: "sample-womens-hoodie",
@@ -15,11 +17,14 @@ const samples = [
       "A soft, everyday hoodie. **Example Women's product** — edit or delete it from the Admin panel.\n\n- Heavyweight brushed fleece\n- Ribbed cuffs and hem\n- Relaxed fit",
     priceCents: 3999,
     compareAtCents: 5999,
+    dealExpiresAt: in24h,
+    stock: 3,
     currency: "usd",
     category: "Women",
     image: null,
     images: JSON.stringify([]),
     colors: JSON.stringify(["Black", "Cream", "Navy"]),
+    colorImages: JSON.stringify({}),
     sizes: JSON.stringify(["XS", "S", "M", "L", "XL"]),
     ratingAvg: 4.6,
     reviewsCount: 128,
@@ -35,11 +40,14 @@ const samples = [
       "A wardrobe staple. **Example Men's product** — edit or delete it from the Admin panel.\n\n- 100% combed cotton\n- Pre-shrunk\n- Crew neck",
     priceCents: 1999,
     compareAtCents: null,
+    dealExpiresAt: null,
+    stock: null,
     currency: "usd",
     category: "Men",
     image: null,
     images: JSON.stringify([]),
     colors: JSON.stringify(["White", "Black", "Olive"]),
+    colorImages: JSON.stringify({}),
     sizes: JSON.stringify(["S", "M", "L", "XL", "XXL"]),
     ratingAvg: 4.4,
     reviewsCount: 64,
@@ -55,11 +63,14 @@ const samples = [
       "Compact wireless earbuds. **Example Electronics product** — edit or delete it from the Admin panel.\n\n- Bluetooth 5.3\n- 24h battery with charging case\n- Touch controls",
     priceCents: 4999,
     compareAtCents: 7999,
+    dealExpiresAt: in24h,
+    stock: 12,
     currency: "usd",
     category: "Electronics",
     image: null,
     images: JSON.stringify([]),
     colors: JSON.stringify(["Black", "White"]),
+    colorImages: JSON.stringify({}),
     sizes: JSON.stringify([]),
     ratingAvg: 4.3,
     reviewsCount: 86,

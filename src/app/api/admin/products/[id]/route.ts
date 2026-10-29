@@ -7,6 +7,17 @@ function toStringArray(value: unknown): string[] {
   return value.map((v) => String(v).trim()).filter(Boolean);
 }
 
+function toStringMap(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (v) out[k] = String(v);
+  }
+  return out;
+}
+
+const DEAL_MS = 24 * 60 * 60 * 1000;
+
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } },
@@ -24,8 +35,30 @@ export async function PUT(
   }
 
   const title = (body.title ?? existing.title).trim();
-  const priceCents = Math.round(Number(body.priceCents));
+  const priceCentsRaw = Math.round(Number(body.priceCents));
+  const priceCents = Number.isFinite(priceCentsRaw)
+    ? priceCentsRaw
+    : existing.priceCents;
   const images = toStringArray(body.images);
+
+  const compareAtCents =
+    body.compareAtCents != null && body.compareAtCents !== ""
+      ? Math.round(Number(body.compareAtCents))
+      : null;
+  const isDeal = compareAtCents != null && compareAtCents > priceCents;
+
+  // Keep the running timer if it was already an active deal; otherwise (new
+  // deal, or a previously expired one being re-enabled) start a fresh 24h.
+  const existingDealActive =
+    existing.compareAtCents != null &&
+    existing.compareAtCents > existing.priceCents &&
+    existing.dealExpiresAt != null &&
+    existing.dealExpiresAt.getTime() > Date.now();
+  const dealExpiresAt = isDeal
+    ? existingDealActive
+      ? existing.dealExpiresAt
+      : new Date(Date.now() + DEAL_MS)
+    : null;
 
   const product = await prisma.product.update({
     where: { id: params.id },
@@ -33,14 +66,17 @@ export async function PUT(
       title,
       description: (body.description ?? existing.description).trim(),
       category: (body.category ?? existing.category).trim(),
-      priceCents: Number.isFinite(priceCents) ? priceCents : existing.priceCents,
-      compareAtCents:
-        body.compareAtCents != null && body.compareAtCents !== ""
-          ? Math.round(Number(body.compareAtCents))
+      priceCents,
+      compareAtCents,
+      dealExpiresAt,
+      stock:
+        body.stock != null && body.stock !== ""
+          ? Math.max(0, Math.round(Number(body.stock)))
           : null,
       image: images[0] ?? null,
       images: JSON.stringify(images),
       colors: JSON.stringify(toStringArray(body.colors)),
+      colorImages: JSON.stringify(toStringMap(body.colorImages)),
       sizes: JSON.stringify(toStringArray(body.sizes)),
       ratingAvg:
         body.ratingAvg != null && body.ratingAvg !== ""

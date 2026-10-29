@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { CATEGORIES } from "@/lib/products";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
+import CurrencySwitcher from "./CurrencySwitcher";
 
 function Icon({ path, label }: { path: string; label: string }) {
   return (
@@ -59,7 +60,8 @@ export default function Header() {
           <span className="text-slate-500 dark:text-slate-400">
             ✨ Free tracked shipping on orders over $50
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <CurrencySwitcher />
             <Link
               href="/account"
               className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"

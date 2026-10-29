@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import PaymentLogos from "./PaymentLogos";
 
 export default function Footer() {
   return (
@@ -29,18 +30,11 @@ export default function Footer() {
           {/* pay with */}
           <div>
             <h3 className="text-sm font-semibold">Pay With</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["Visa", "Mastercard", "Amex", "PayPal", "Apple Pay"].map((p) => (
-                <span
-                  key={p}
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                >
-                  {p}
-                </span>
-              ))}
+            <div className="mt-3">
+              <PaymentLogos />
             </div>
             <p className="mt-3 text-xs text-slate-400">
-              🔒 Secure checkout powered by Stripe
+              Secure checkout powered by Stripe
             </p>
           </div>
 

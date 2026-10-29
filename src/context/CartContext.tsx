@@ -15,6 +15,8 @@ export type CartItem = {
   slug: string;
   title: string;
   priceCents: number;
+  compareAtCents?: number | null;
+  dealExpiresAt?: string | null;
   currency: string;
   image: string | null;
   category: string;

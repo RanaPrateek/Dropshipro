@@ -7,6 +7,25 @@ function toStringArray(value: unknown): string[] {
   return value.map((v) => String(v).trim()).filter(Boolean);
 }
 
+function toStringMap(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (v) out[k] = String(v);
+  }
+  return out;
+}
+
+const DEAL_MS = 24 * 60 * 60 * 1000;
+
+function parseCompareAt(raw: unknown): number | null {
+  return raw != null && raw !== "" ? Math.round(Number(raw)) : null;
+}
+
+function parseStock(raw: unknown): number | null {
+  return raw != null && raw !== "" ? Math.max(0, Math.round(Number(raw))) : null;
+}
+
 export async function GET() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
@@ -33,6 +52,8 @@ export async function POST(req: Request) {
   }
 
   const images = toStringArray(body.images);
+  const compareAtCents = parseCompareAt(body.compareAtCents);
+  const isDeal = compareAtCents != null && compareAtCents > priceCents;
 
   const product = await prisma.product.create({
     data: {
@@ -40,14 +61,14 @@ export async function POST(req: Request) {
       description,
       category,
       priceCents,
-      compareAtCents:
-        body.compareAtCents != null && body.compareAtCents !== ""
-          ? Math.round(Number(body.compareAtCents))
-          : null,
+      compareAtCents,
+      dealExpiresAt: isDeal ? new Date(Date.now() + DEAL_MS) : null,
+      stock: parseStock(body.stock),
       currency: body.currency || "usd",
       image: images[0] ?? null,
       images: JSON.stringify(images),
       colors: JSON.stringify(toStringArray(body.colors)),
+      colorImages: JSON.stringify(toStringMap(body.colorImages)),
       sizes: JSON.stringify(toStringArray(body.sizes)),
       ratingAvg:
         body.ratingAvg != null && body.ratingAvg !== ""

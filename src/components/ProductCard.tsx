@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { type StoreProduct, isOnSale } from "@/lib/products";
-import { formatPrice, discountPercent } from "@/lib/format";
+import { type StoreProduct, isOnSale, stockBadge } from "@/lib/products";
+import { discountPercent } from "@/lib/format";
 import ProductImage from "./ProductImage";
+import Price from "./Price";
 
 export default function ProductCard({ product }: { product: StoreProduct }) {
   const onSale = isOnSale(product);
@@ -9,6 +10,7 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
     onSale && product.compareAtCents
       ? discountPercent(product.priceCents, product.compareAtCents)
       : 0;
+  const badge = stockBadge(product.stock);
 
   return (
     <Link
@@ -27,22 +29,34 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
             -{pct}%
           </span>
         )}
+        {badge && (
+          <span
+            className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+              badge.tone === "out"
+                ? "bg-slate-700 text-white"
+                : badge.tone === "low"
+                  ? "bg-amber-500 text-white"
+                  : "bg-slate-900/70 text-white"
+            }`}
+          >
+            {badge.text}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <span className="text-xs font-medium uppercase tracking-wide text-brand-600 dark:text-brand-200">
           {product.category}
         </span>
-        <h3 className="mt-1 line-clamp-2 flex-1 font-semibold leading-snug">
+        <h3 className="mt-1 line-clamp-2 flex-1 text-sm font-semibold leading-snug">
           {product.title}
         </h3>
         <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-lg font-bold">
-            {formatPrice(product.priceCents, product.currency)}
-          </span>
+          <Price cents={product.priceCents} className="text-lg font-bold" />
           {onSale && product.compareAtCents && (
-            <span className="text-sm text-slate-400 line-through">
-              {formatPrice(product.compareAtCents, product.currency)}
-            </span>
+            <Price
+              cents={product.compareAtCents}
+              className="text-sm text-slate-400 line-through"
+            />
           )}
         </div>
       </div>

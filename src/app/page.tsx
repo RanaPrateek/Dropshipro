@@ -1,20 +1,27 @@
 import Link from "next/link";
-import { getProducts, getDeals, CATEGORIES } from "@/lib/products";
+import { getNonDeals, getDeals, CATEGORIES } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
+import {
+  SparkleIcon,
+  TruckIcon,
+  ShieldIcon,
+  ReturnIcon,
+  ChatIcon,
+} from "@/components/Icons";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [all, deals] = await Promise.all([getProducts(), getDeals(4)]);
-  const more = all.slice(0, 8);
+  const [deals, more] = await Promise.all([getDeals(4), getNonDeals(8)]);
 
   return (
     <div>
       {/* Hero */}
       <section className="bg-gradient-to-br from-brand-50 to-white dark:from-slate-900 dark:to-slate-950">
         <div className="mx-auto max-w-7xl px-4 py-20 text-center">
-          <span className="inline-block rounded-full bg-brand-100 px-4 py-1 text-sm font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-200">
-            ✨ New drops every week
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-4 py-1 text-sm font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-200">
+            <SparkleIcon className="h-4 w-4" />
+            New drops every week
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">
             Trending finds, delivered to your door
@@ -99,16 +106,16 @@ export default async function HomePage() {
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: "🚚", title: "Fast, tracked shipping", text: "Every order ships with tracking so you always know where it is." },
-              { icon: "🔒", title: "Secure checkout", text: "Payments are protected end-to-end by Stripe. Your details stay safe." },
-              { icon: "↩️", title: "30-day easy returns", text: "Changed your mind? Send it back within 30 days, hassle-free." },
-              { icon: "💬", title: "Friendly support", text: "Real help when you need it — we're here before and after you buy." },
+              { Icon: TruckIcon, title: "Fast, tracked shipping", text: "Every order ships with tracking so you always know where it is." },
+              { Icon: ShieldIcon, title: "Secure checkout", text: "Payments are protected end-to-end by Stripe. Your details stay safe." },
+              { Icon: ReturnIcon, title: "30-day easy returns", text: "Changed your mind? Send it back within 30 days, hassle-free." },
+              { Icon: ChatIcon, title: "Friendly support", text: "Real help when you need it — we're here before and after you buy." },
             ].map((f) => (
               <div
                 key={f.title}
                 className="rounded-2xl border border-slate-200 bg-white p-6 text-center dark:border-slate-800 dark:bg-slate-950"
               >
-                <div className="text-3xl">{f.icon}</div>
+                <f.Icon className="mx-auto h-8 w-8 text-brand-600 dark:text-brand-200" />
                 <h3 className="mt-3 font-semibold">{f.title}</h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   {f.text}

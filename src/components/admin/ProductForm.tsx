@@ -13,8 +13,10 @@ export type ProductFormValues = {
   category: string;
   priceDollars: string;
   compareAtDollars: string;
+  stock: string;
   images: string[];
   colorsText: string;
+  colorImages: Record<string, string>;
   sizesText: string;
   ratingAvg: string;
   reviewsCount: string;
@@ -45,8 +47,10 @@ export default function ProductForm({
     category: initial?.category ?? CATEGORIES[0],
     priceDollars: initial?.priceDollars ?? "",
     compareAtDollars: initial?.compareAtDollars ?? "",
+    stock: initial?.stock ?? "",
     images: initial?.images ?? [],
     colorsText: initial?.colorsText ?? "",
+    colorImages: initial?.colorImages ?? {},
     sizesText: initial?.sizesText ?? "",
     ratingAvg: initial?.ratingAvg ?? "",
     reviewsCount: initial?.reviewsCount ?? "",
@@ -166,8 +170,10 @@ export default function ProductForm({
       category: v.category,
       priceCents,
       compareAtCents,
+      stock: v.stock,
       images: v.images,
       colors: splitList(v.colorsText),
+      colorImages: v.colorImages,
       sizes: splitList(v.sizesText),
       ratingAvg: v.ratingAvg,
       reviewsCount: v.reviewsCount,
@@ -347,6 +353,67 @@ export default function ProductForm({
           </div>
         </div>
 
+        {/* per-color image mapping */}
+        {(() => {
+          const colorList = v.colorsText
+            .split(",")
+            .map((c) => c.trim())
+            .filter(Boolean);
+          if (colorList.length === 0 || v.images.length === 0) return null;
+          return (
+            <div>
+              <label className={label}>Color images (optional)</label>
+              <p className="mb-2 text-xs text-slate-400">
+                Pick which image shows when a customer selects each color.
+              </p>
+              <div className="space-y-2">
+                {colorList.map((c) => (
+                  <div key={c} className="flex items-center gap-3">
+                    <span className="w-24 shrink-0 text-sm font-medium">{c}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {v.images.map((img) => {
+                        const picked = v.colorImages[c] === img;
+                        return (
+                          <button
+                            key={img}
+                            type="button"
+                            onClick={() =>
+                              set("colorImages", { ...v.colorImages, [c]: img })
+                            }
+                            className={`h-12 w-12 overflow-hidden rounded-lg border-2 ${
+                              picked ? "border-brand-600" : "border-slate-200"
+                            }`}
+                          >
+                            <ProductImage
+                              image={img}
+                              title={c}
+                              category={v.category}
+                              compact
+                            />
+                          </button>
+                        );
+                      })}
+                      {v.colorImages[c] && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = { ...v.colorImages };
+                            delete next[c];
+                            set("colorImages", next);
+                          }}
+                          className="self-center text-xs text-slate-400 hover:underline"
+                        >
+                          clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* social proof + shipping */}
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -407,6 +474,22 @@ export default function ProductForm({
               onChange={(e) => set("shipDaysMax", e.target.value)}
             />
           </div>
+        </div>
+
+        <div>
+          <label className={label}>Stock quantity (optional)</label>
+          <input
+            className={input}
+            type="number"
+            min="0"
+            value={v.stock}
+            onChange={(e) => set("stock", e.target.value)}
+            placeholder="e.g. 8"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Shows a badge automatically: “Only 1 left” (1), “Almost sold out”
+            (≤5), or “Sold out” (0). Leave blank to not track stock.
+          </p>
         </div>
 
         <div>
