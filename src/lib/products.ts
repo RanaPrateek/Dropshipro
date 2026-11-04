@@ -179,9 +179,9 @@ export async function getProducts(
       ...(term
         ? {
             OR: [
-              { title: { contains: term } },
-              { description: { contains: term } },
-              { category: { contains: term } },
+              { title: { contains: term, mode: "insensitive" } },
+              { description: { contains: term, mode: "insensitive" } },
+              { category: { contains: term, mode: "insensitive" } },
             ],
           }
         : {}),

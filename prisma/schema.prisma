@@ -1,15 +1,14 @@
 // Prisma schema for Dropshipro.
 //
-// Uses SQLite so the store runs on your machine with zero database setup —
-// data is saved to a local file (prisma/dev.db). When we put the site online
-// later, we switch the provider to PostgreSQL (the roadmap's production choice).
+// Uses PostgreSQL (hosted on Neon) so the same database works locally and on
+// the live site. Set DATABASE_URL to your Neon connection string.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
