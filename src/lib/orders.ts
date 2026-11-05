@@ -78,6 +78,8 @@ export type CreateOrderInput = {
   state?: string;
   zip?: string;
   country?: string;
+  deliveryMethod?: string;
+  shippingCents?: number;
   items: { productId: string; quantity: number; color?: string; size?: string }[];
 };
 
@@ -114,10 +116,12 @@ export async function createOrder(input: CreateOrderInput) {
 
   if (lineItems.length === 0) throw new Error("No valid items in order");
 
-  const totalCents = lineItems.reduce(
+  const subtotalCents = lineItems.reduce(
     (sum, i) => sum + i.priceCents * i.quantity,
     0,
   );
+  const shippingCents = Math.max(0, Math.floor(input.shippingCents ?? 0));
+  const totalCents = subtotalCents + shippingCents;
 
   // Link to a customer record (upsert by email).
   const customer = await prisma.customer.upsert({
@@ -133,6 +137,8 @@ export async function createOrder(input: CreateOrderInput) {
       customerId: customer.id,
       status: "PENDING",
       totalCents,
+      shippingCents,
+      deliveryMethod: input.deliveryMethod ?? null,
       shippingName: input.name ?? null,
       shippingLine1: input.line1 ?? null,
       shippingLine2: input.line2 ?? null,

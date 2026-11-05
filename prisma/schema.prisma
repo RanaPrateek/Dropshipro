@@ -124,6 +124,10 @@ model Order {
   // One of: PENDING, PAID, ORDERED_WITH_SUPPLIER, SHIPPED, DELIVERED, CANCELLED, REFUNDED
   status          String      @default("PENDING")
   totalCents      Int
+  // Shipping fee in USD minor units (part of totalCents). 0 = free.
+  shippingCents   Int         @default(0)
+  // One of: standard, express, pickup.
+  deliveryMethod  String?
   currency        String      @default("usd")
   stripeSessionId String?     @unique
   shippingName    String?

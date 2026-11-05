@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { createOrder } from "@/lib/orders";
+import { deliveryFee, isDeliveryId } from "@/lib/delivery";
 import { sendEmail, orderConfirmationEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
@@ -22,6 +23,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
 
+  // Trust the delivery *method* from the client, but compute the fee here so a
+  // tampered request can't change the shipping price.
+  const deliveryMethod = isDeliveryId(body.deliveryMethod)
+    ? body.deliveryMethod
+    : "standard";
+  const shippingCents = deliveryFee(deliveryMethod);
+
   let order;
   try {
     order = await createOrder({
@@ -33,6 +41,8 @@ export async function POST(req: Request) {
       state: body.state,
       zip: body.zip,
       country: body.country,
+      deliveryMethod,
+      shippingCents,
       items,
     });
   } catch {
@@ -55,16 +65,27 @@ export async function POST(req: Request) {
   if (stripeConfigured) {
     try {
       const stripe = new Stripe(secretKey as string);
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        line_items: order.items.map((i) => ({
-          quantity: i.quantity,
+      const lineItems = order.items.map((i) => ({
+        quantity: i.quantity,
+        price_data: {
+          currency: order.currency,
+          unit_amount: i.priceCents,
+          product_data: { name: i.title },
+        },
+      }));
+      if (order.shippingCents > 0) {
+        lineItems.push({
+          quantity: 1,
           price_data: {
             currency: order.currency,
-            unit_amount: i.priceCents,
-            product_data: { name: i.title },
+            unit_amount: order.shippingCents,
+            product_data: { name: "Shipping" },
           },
-        })),
+        });
+      }
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: lineItems,
         customer_email: order.email,
         success_url: `${siteUrl}/checkout/success?order=${order.orderNumber}`,
         cancel_url: `${siteUrl}/cart`,
