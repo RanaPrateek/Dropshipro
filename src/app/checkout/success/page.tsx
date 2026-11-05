@@ -1,13 +1,44 @@
 import Link from "next/link";
+import Stripe from "stripe";
+import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Order confirmed — Nuvo" };
 
-export default function CheckoutSuccessPage({
+/**
+ * After returning from Stripe, confirm the payment and mark the order PAID
+ * (so it moves from "To pay" to "To ship"). Safe to run when Stripe isn't
+ * configured — it simply does nothing.
+ */
+async function markPaidIfNeeded(orderNumber: string): Promise<void> {
+  const order = await prisma.order.findUnique({ where: { orderNumber } });
+  if (!order || !order.stripeSessionId || order.status !== "PENDING") return;
+
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const configured = !!secretKey && secretKey.startsWith("sk_") && !secretKey.includes("...");
+  if (!configured) return;
+
+  try {
+    const stripe = new Stripe(secretKey as string);
+    const session = await stripe.checkout.sessions.retrieve(order.stripeSessionId);
+    if (session.payment_status === "paid") {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: "PAID" },
+      });
+    }
+  } catch {
+    // leave the order as-is if the lookup fails
+  }
+}
+
+export default async function CheckoutSuccessPage({
   searchParams,
 }: {
   searchParams: { order?: string };
 }) {
   const orderNumber = searchParams.order;
+  if (orderNumber) await markPaidIfNeeded(orderNumber);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center">

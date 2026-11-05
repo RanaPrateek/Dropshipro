@@ -187,6 +187,8 @@ export default function CheckoutPage() {
     "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-slate-900";
   const labelCls = "mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300";
   const shippingCents = deliveryFee(delivery);
+  // When a Stripe publishable key is present, real (test or live) payment is on.
+  const stripeEnabled = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
@@ -362,32 +364,48 @@ export default function CheckoutPage() {
 
           {/* payment method */}
           <section>
-            <h2 className="mb-3 font-semibold">Payment method</h2>
-            <div className="space-y-2">
-              {PAYMENTS.map((p) => (
-                <label
-                  key={p.id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${
-                    payment === p.id
-                      ? "border-brand-500 bg-brand-50 dark:bg-slate-800"
-                      : "border-slate-200 hover:border-slate-300 dark:border-slate-700"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={payment === p.id}
-                    onChange={() => setPayment(p.id)}
-                    className="h-4 w-4 text-brand-600 focus:ring-brand-500"
-                  />
-                  <span className="text-sm font-medium">{p.label}</span>
-                </label>
-              ))}
-            </div>
-            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-              Demo mode: your order is recorded but no payment is taken. Connect a
-              payment provider to charge cards for real.
-            </p>
+            <h2 className="mb-3 font-semibold">Payment</h2>
+            {stripeEnabled ? (
+              <div className="rounded-xl border border-slate-200 p-4 text-sm dark:border-slate-700">
+                <div className="flex items-center gap-2 font-medium">
+                  <ShieldIcon className="h-4 w-4 text-brand-600" />
+                  Secure payment
+                </div>
+                <p className="mt-1.5 text-slate-500 dark:text-slate-400">
+                  Continue to our secure payment page to enter your card details.
+                  You can pay by card, and on supported devices Apple Pay or Google
+                  Pay.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {PAYMENTS.map((p) => (
+                    <label
+                      key={p.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${
+                        payment === p.id
+                          ? "border-brand-500 bg-brand-50 dark:bg-slate-800"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={payment === p.id}
+                        onChange={() => setPayment(p.id)}
+                        className="h-4 w-4 text-brand-600 focus:ring-brand-500"
+                      />
+                      <span className="text-sm font-medium">{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                  Demo mode: your order is recorded but no payment is taken.
+                  Connect a payment provider to charge cards for real.
+                </p>
+              </>
+            )}
           </section>
         </div>
 
@@ -445,7 +463,11 @@ export default function CheckoutPage() {
             disabled={loading}
             className="mt-5 w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
           >
-            {loading ? "Placing order…" : "Place order"}
+            {loading
+              ? "Placing order…"
+              : stripeEnabled
+                ? "Continue to payment"
+                : "Place order"}
           </button>
           <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
             <ShieldIcon className="h-4 w-4" />
