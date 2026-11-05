@@ -87,6 +87,8 @@ model Customer {
   phone        String?
   // Set when the customer registers an account (guests from checkout have none).
   passwordHash String?
+  // When the customer accepted the Terms & Conditions (null = guest/not yet).
+  termsAcceptedAt DateTime?
   orders       Order[]
   addresses    Address[]
   createdAt    DateTime @default(now())

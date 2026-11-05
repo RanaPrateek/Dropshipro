@@ -12,6 +12,7 @@ export default function AuthModal() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,7 @@ export default function AuthModal() {
       const res = await fetch(`/api/account/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, agreedToTerms: agreed }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -34,6 +35,7 @@ export default function AuthModal() {
         setName("");
         setEmail("");
         setPassword("");
+        setAgreed(false);
         router.refresh();
       } else {
         setError(data.error ?? "Something went wrong.");
@@ -77,7 +79,7 @@ export default function AuthModal() {
             {(["login", "register"] as const).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(null); }}
+                onClick={() => { setMode(m); setError(null); setAgreed(false); }}
                 className={`flex-1 rounded-lg py-2 transition ${
                   mode === m ? "bg-white shadow dark:bg-slate-900" : "text-slate-500"
                 }`}
@@ -102,11 +104,32 @@ export default function AuthModal() {
               <label className="text-sm font-medium">Password</label>
               <input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
             </div>
+            {mode === "register" && (
+              <label className="flex items-start gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                />
+                <span>
+                  I agree to Nuvo&apos;s{" "}
+                  <a href="/terms" target="_blank" className="font-medium text-brand-600 underline">
+                    Terms &amp; Conditions
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy" target="_blank" className="font-medium text-brand-600 underline">
+                    Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
+            )}
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+              disabled={loading || (mode === "register" && !agreed)}
+              className="w-full rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
             </button>
@@ -128,11 +151,14 @@ export default function AuthModal() {
             Social sign-in coming soon
           </p>
 
-          <p className="mt-5 text-center text-xs text-slate-400">
-            By continuing you agree to our{" "}
-            <a href="/privacy" className="underline">Privacy Policy</a> and{" "}
-            <a href="/cookies" className="underline">Cookie Policy</a>.
-          </p>
+          {mode === "login" && (
+            <p className="mt-5 text-center text-xs text-slate-400">
+              By signing in you agree to our{" "}
+              <a href="/terms" className="underline">Terms</a>,{" "}
+              <a href="/privacy" className="underline">Privacy Policy</a> and{" "}
+              <a href="/cookies" className="underline">Cookie Policy</a>.
+            </p>
+          )}
         </div>
       </div>
     </div>

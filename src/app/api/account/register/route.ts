@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   const email = String(body?.email ?? "").trim().toLowerCase();
   const name = String(body?.name ?? "").trim();
   const password = String(body?.password ?? "");
+  const agreedToTerms = body?.agreedToTerms === true;
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
@@ -18,6 +19,12 @@ export async function POST(req: Request) {
   if (password.length < 6) {
     return NextResponse.json(
       { error: "Password must be at least 6 characters." },
+      { status: 400 },
+    );
+  }
+  if (!agreedToTerms) {
+    return NextResponse.json(
+      { error: "Please accept the Terms & Conditions to create an account." },
       { status: 400 },
     );
   }
@@ -31,13 +38,14 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashPassword(password);
+  const now = new Date();
   const customer = existing
     ? await prisma.customer.update({
         where: { id: existing.id },
-        data: { passwordHash, name: name || existing.name },
+        data: { passwordHash, name: name || existing.name, termsAcceptedAt: now },
       })
     : await prisma.customer.create({
-        data: { email, name: name || null, passwordHash },
+        data: { email, name: name || null, passwordHash, termsAcceptedAt: now },
       });
 
   const res = NextResponse.json({
