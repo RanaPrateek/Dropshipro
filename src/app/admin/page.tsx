@@ -27,6 +27,9 @@ export default async function AdminPage() {
           <Link href="/admin/orders" className="text-sm font-medium text-slate-500 hover:text-brand-600">
             Orders
           </Link>
+          <Link href="/admin/customers" className="text-sm font-medium text-slate-500 hover:text-brand-600">
+            Customers
+          </Link>
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-800">
             View store
           </Link>

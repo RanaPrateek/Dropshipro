@@ -42,6 +42,9 @@ export default async function AdminOrdersPage() {
           <Link href="/admin" className="text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400">
             Products
           </Link>
+          <Link href="/admin/customers" className="text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400">
+            Customers
+          </Link>
           <LogoutButton />
         </div>
       </div>
