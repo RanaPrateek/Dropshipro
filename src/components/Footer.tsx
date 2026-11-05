@@ -70,9 +70,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row">
           <p>&copy; {new Date().getFullYear()} Nuvo. All rights reserved.</p>
-          <p>Fast shipping · 30-day returns · Secure checkout</p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link href="/privacy" className="hover:text-brand-600">Privacy</Link>
+            <Link href="/terms" className="hover:text-brand-600">Terms</Link>
+            <Link href="/cookies" className="hover:text-brand-600">Cookies</Link>
+          </nav>
         </div>
       </div>
     </footer>

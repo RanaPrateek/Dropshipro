@@ -42,7 +42,14 @@ export async function POST(req: Request) {
 
   const res = NextResponse.json({
     ok: true,
-    customer: { id: customer.id, email: customer.email, name: customer.name },
+    customer: {
+      id: customer.id,
+      email: customer.email,
+      name: customer.name,
+      username: customer.username,
+      image: customer.image,
+      phone: customer.phone,
+    },
   });
   res.cookies.set(CUSTOMER_COOKIE, createSessionToken(customer.id), {
     httpOnly: true,

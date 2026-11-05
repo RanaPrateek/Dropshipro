@@ -8,7 +8,14 @@ import {
   type ReactNode,
 } from "react";
 
-export type Customer = { id: string; email: string; name: string | null };
+export type Customer = {
+  id: string;
+  email: string;
+  name: string | null;
+  username: string | null;
+  image: string | null;
+  phone: string | null;
+};
 
 type CustomerContextType = {
   customer: Customer | null;

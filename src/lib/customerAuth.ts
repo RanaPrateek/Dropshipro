@@ -43,6 +43,9 @@ export type SessionCustomer = {
   id: string;
   email: string;
   name: string | null;
+  username: string | null;
+  image: string | null;
+  phone: string | null;
 };
 
 /** Read the logged-in customer from the session cookie (server-side). */
@@ -53,7 +56,14 @@ export async function getCurrentCustomer(): Promise<SessionCustomer | null> {
   if (!id) return null;
   const customer = await prisma.customer.findUnique({
     where: { id },
-    select: { id: true, email: true, name: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      username: true,
+      image: true,
+      phone: true,
+    },
   });
   return customer;
 }

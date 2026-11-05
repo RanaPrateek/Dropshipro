@@ -130,8 +130,8 @@ export default function AuthModal() {
 
           <p className="mt-5 text-center text-xs text-slate-400">
             By continuing you agree to our{" "}
-            <a href="#" className="underline">Privacy Policy</a> and{" "}
-            <a href="#" className="underline">Cookie Policy</a>.
+            <a href="/privacy" className="underline">Privacy Policy</a> and{" "}
+            <a href="/cookies" className="underline">Cookie Policy</a>.
           </p>
         </div>
       </div>

@@ -83,7 +83,7 @@ export default function AccountMenu() {
                 <Link href="/account" className={menuLink} onClick={() => setOpen(false)}>
                   My account
                 </Link>
-                <Link href="/account" className={menuLink} onClick={() => setOpen(false)}>
+                <Link href="/account/orders" className={menuLink} onClick={() => setOpen(false)}>
                   Order history
                 </Link>
                 <Link href="/favorites" className={menuLink} onClick={() => setOpen(false)}>
