@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function AdminLoginPage() {
   return (
@@ -50,13 +51,13 @@ function LoginForm() {
         Enter your admin password to manage products.
       </p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <input
-          type="password"
+        <PasswordInput
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           placeholder="Password"
           autoFocus
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-500"
+          autoComplete="current-password"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-slate-900"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button

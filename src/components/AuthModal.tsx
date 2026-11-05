@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCustomer } from "@/context/CustomerContext";
 import Logo from "./Logo";
+import PasswordInput from "./PasswordInput";
 
 export default function AuthModal() {
   const router = useRouter();
@@ -102,7 +103,13 @@ export default function AuthModal() {
             </div>
             <div>
               <label className="text-sm font-medium">Password</label>
-              <input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+              <PasswordInput
+                className={input}
+                value={password}
+                onChange={setPassword}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                required
+              />
             </div>
             {mode === "register" && (
               <label className="flex items-start gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
