@@ -23,6 +23,25 @@ export const STATUS_LABELS: Record<string, string> = {
   REFUNDED: "Refunded",
 };
 
+/**
+ * Customer-facing order tabs (To pay / To ship / Shipped / Returns) and the
+ * statuses that fall under each. Used by the account Orders page.
+ */
+export const ORDER_TABS = [
+  { key: "to-pay", label: "To pay", statuses: ["PENDING"] },
+  { key: "to-ship", label: "To ship", statuses: ["PAID", "ORDERED_WITH_SUPPLIER"] },
+  { key: "shipped", label: "Shipped", statuses: ["SHIPPED", "DELIVERED"] },
+  { key: "returns", label: "Returns", statuses: ["CANCELLED", "REFUNDED"] },
+] as const;
+
+export type OrderTabKey = (typeof ORDER_TABS)[number]["key"];
+
+/** Which tab an order belongs in, from its status. */
+export function orderTab(status: string): OrderTabKey {
+  const tab = ORDER_TABS.find((t) => (t.statuses as readonly string[]).includes(status));
+  return tab?.key ?? "to-ship";
+}
+
 /** The customer-facing tracking timeline steps, in order. */
 export const TRACKING_STEPS: { status: OrderStatus; label: string }[] = [
   { status: "PAID", label: "Order confirmed" },
