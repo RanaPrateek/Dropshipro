@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { useCustomer } from "@/context/CustomerContext";
 import { useFavorites } from "@/context/FavoritesContext";
 import { CATEGORIES } from "@/lib/products";
 import Logo from "./Logo";
-import ThemeToggle from "./ThemeToggle";
-import CurrencySwitcher from "./CurrencySwitcher";
+import AccountMenu from "./AccountMenu";
 
 function Icon({ path, label }: { path: string; label: string }) {
   return (
@@ -41,7 +39,6 @@ const ICONS = {
 export default function Header() {
   const router = useRouter();
   const { totalItems } = useCart();
-  const { customer, loading, openAuth } = useCustomer();
   const { count: favCount } = useFavorites();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,36 +55,6 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
-      {/* top utility bar */}
-      <div className="border-b border-slate-100 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5">
-          <span className="text-slate-500 dark:text-slate-400">
-            ✨ Free tracked shipping on orders over $50
-          </span>
-          <div className="flex items-center gap-2">
-            <CurrencySwitcher />
-            {loading ? (
-              <span className="w-20" />
-            ) : customer ? (
-              <Link
-                href="/account"
-                className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"
-              >
-                Hi, {customer.name?.split(" ")[0] || "account"}
-              </Link>
-            ) : (
-              <button
-                onClick={openAuth}
-                className="font-medium text-slate-600 hover:text-brand-600 dark:text-slate-300"
-              >
-                Sign in / Register
-              </button>
-            )}
-            <ThemeToggle className="h-7 w-7 text-sm" />
-          </div>
-        </div>
-      </div>
-
       {/* main nav */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
         {/* left: categories (desktop) + hamburger (mobile) */}
@@ -157,9 +124,7 @@ export default function Header() {
               </span>
             )}
           </Link>
-          <Link href="/account" className={`${iconBtn} hidden sm:grid`} aria-label="Profile">
-            <Icon path={ICONS.user} label="Profile" />
-          </Link>
+          <AccountMenu />
           <Link href="/cart" className={`${iconBtn} relative`} aria-label="Cart">
             <Icon path={ICONS.cart} label="Cart" />
             {totalItems > 0 && (

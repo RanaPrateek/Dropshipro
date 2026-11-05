@@ -40,7 +40,7 @@ export default function Logo({
         />
       </svg>
       {wordmark && (
-        <span className="text-xl font-extrabold lowercase tracking-tight text-slate-900">
+        <span className="text-xl font-extrabold lowercase tracking-tight text-slate-900 dark:text-white">
           nuvo
         </span>
       )}
